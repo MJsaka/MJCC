@@ -8,6 +8,28 @@
 
 import UIKit
 
+//计算阶乘或双阶乘
+public func factorial(n : Int , step : Int) -> Int {
+    if n == 0 || n == 1{
+        return 1
+    }else {
+        return n * factorial(n - step , step: step)
+    }
+}
+//迭代计算 a ~ k , 精确到12位小数
+//x[n+1] = (k - 1) / k * x[n] + a / (k * x[n]^(k - 1))
+public func roo(base : Double ,  times: Double) -> Double {
+    var x0 = 1.0 , x = 1.0
+    
+    repeat {
+        x0 = x
+        x = (times - 1.0) / times * x0 + base / (times * pow(x0, times - 1.0))
+    } while x - x0 > 1E-12
+    
+    return x
+}
+
+
 class BNode: NSObject {
     var father : BNode?
     var leftChild : BNode?
@@ -101,6 +123,64 @@ class EquationTree: BTree {
             }
         }
     }
+    //计算某结点的子式的值
+    func subEquationValue(node node : EquationNode) -> Double {
+        switch node.token.type {
+        case TokenType.integer , TokenType.float:
+            return Double(node.token.text)!
+        case TokenType.function1 :
+            switch node.token.text {
+            case "sin":
+                return sin(subEquationValue(node: node.leftChild as! EquationNode))
+            case "cos" :
+                return cos(subEquationValue(node: node.leftChild  as! EquationNode))
+            case "tan" :
+                return tan(subEquationValue(node: node.leftChild  as! EquationNode))
+            case "cot" :
+                return tan(M_PI_2 - subEquationValue(node: node.leftChild  as! EquationNode))
+            case "arcsin" :
+                return asin(subEquationValue(node: node.leftChild as! EquationNode))
+            case "arccos" :
+                return acos(subEquationValue(node: node.leftChild as! EquationNode))
+            case "arctan" :
+                return atan(subEquationValue(node: node.leftChild as! EquationNode))
+            case "arccot" :
+                let t = atan(subEquationValue(node: node.leftChild as! EquationNode))
+                return t > 0 ? M_PI_2 - t : 0 - M_PI_2 - t
+            default:
+                return 0
+            }
+        case TokenType.function2 :
+            //根据换底公式:log(X , Y) = log(a,Y) / log(a,X)
+            return log2(subEquationValue(node: node.rightChild as! EquationNode)) / log2(subEquationValue(node: node.leftChild as! EquationNode))
+        case TokenType.factorial :
+            if node.token.text == "factorial" {
+                return Double(factorial(Int(subEquationValue(node: node.leftChild as! EquationNode)), step: 1))
+            }else{
+                return Double(factorial(Int(subEquationValue(node: node.leftChild as! EquationNode)), step: 2))
+            }
+        default:
+            let l : Double = subEquationValue(node: node.leftChild as! EquationNode)
+            let r : Double = subEquationValue(node: node.rightChild as! EquationNode)
+            switch node.token.text {
+            case "plus":
+                return l + r
+            case "minus" :
+                return l - r
+            case "multiply" :
+                return l * r
+            case "divide" :
+                return l / r
+            case "power" :
+                return pow(l , r)
+            case "root" :
+                return roo(l, times: r)
+            default:
+                return 0
+            }
+        }
+    }
+    
     //从表达式树生成表达式串
     func equationString() -> String {
         return subString(node : root as! EquationNode)
