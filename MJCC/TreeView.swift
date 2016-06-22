@@ -33,32 +33,47 @@ class TreeView: UIView {
     
     func draw(node : BNode , pos : NodePosition , context : CGContextRef){
         let p : CGPoint = CGPoint(x: (pos.left + pos.right) / 2, y: pos.vertical)
+        var lpos : NodePosition
+        var rpos : NodePosition
+        var lcenter : CGPoint
+        var rcenter : CGPoint
         
         if let l = node.leftChild {
-            let lpos = NodePosition(left: pos.left, right: p.x, vertical: p.y + self.frame.height / self.depth)
-            let lcenter = CGPoint(x: (lpos.left + lpos.right)/2, y: lpos.vertical)
+            if node.rightChild == nil {
+                lpos = NodePosition(left: pos.left, right: pos.right, vertical: p.y + self.frame.height / self.depth)
+                lcenter = CGPoint(x: (lpos.left + lpos.right)/2, y: lpos.vertical)
+            }else {
+                lpos = NodePosition(left: pos.left, right: p.x, vertical: p.y + self.frame.height / self.depth)
+                lcenter = CGPoint(x: (lpos.left + lpos.right)/2, y: lpos.vertical)
+            }
             self.drawLine(context, from: p, to: lcenter)
             self.draw(l, pos: lpos, context: context)
         }
         if let r = node.rightChild {
-            let rpos = NodePosition(left: p.x, right: pos.right, vertical: p.y + self.frame.height / self.depth)
-            let rcenter = CGPoint(x: (rpos.left + rpos.right)/2, y: rpos.vertical)
+            if node.leftChild == nil {
+                rpos = NodePosition(left: pos.left, right: pos.right, vertical: p.y + self.frame.height / self.depth)
+                rcenter = CGPoint(x: (rpos.left + rpos.right)/2, y: rpos.vertical)
+            }else {
+                rpos = NodePosition(left: p.x, right: pos.right, vertical: p.y + self.frame.height / self.depth)
+                rcenter = CGPoint(x: (rpos.left + rpos.right)/2, y: rpos.vertical)
+            }
             self.drawLine(context, from: p, to: rcenter)
             self.draw(r, pos: rpos, context: context)
         }
-        CGContextAddArc(context, p.x, p.y, radius, 0, 2 * CGFloat(M_PI), 0)
+        
+        self.drawNode(node, context: context, pos: p)
+    }
+    
+    func drawNode(node : BNode , context : CGContextRef , pos : CGPoint) {
+        CGContextAddArc(context, pos.x, pos.y, radius, 0, 2 * CGFloat(M_PI), 0)
         CGContextSetLineWidth(context, 2)
         CGContextSetAlpha(context, 1.0)
         CGContextSetStrokeColorWithColor(context, UIColor.grayColor().CGColor)
         CGContextSetFillColorWithColor(context, UIColor.whiteColor().CGColor)
         CGContextDrawPath(context, CGPathDrawingMode.FillStroke)
-        self.drawTitle(p, node: node)
 
-    }
-
-    func drawTitle(pos : CGPoint , node : BNode) {
         let title : NSString = NSString(string: (node as! EquationNode).token.text)
-
+        
         let color: UIColor = UIColor.darkGrayColor()
         let font = UIFont(name: "PingFang SC", size: fontSize)
         
@@ -86,7 +101,7 @@ class TreeView: UIView {
         CGContextStrokePath(context)
     }
     
-    static func minimumSize(root : EquationNode) -> CGSize {
+    static func minimumSize(root : BNode) -> CGSize {
         let depth = self.depth(root)
         let w = pow(2, depth - 1) * 60
         let h = depth * 60
