@@ -112,7 +112,9 @@ class EquationTree: BTree {
         var r : String = ""
         
         switch node.token.type {
-        case TokenType.variable , TokenType.integer , TokenType.float:
+        case TokenType.variable :
+            s = "${" + node.token.text + "}"
+        case TokenType.integer , TokenType.float:
             s = node.token.text
         case TokenType.plusAndMinus , TokenType.multiplyAndDivide , TokenType.equal:
             s = " " + operatorNameDict[node.token.text]! + " "
@@ -123,7 +125,19 @@ class EquationTree: BTree {
         if node.token.type == TokenType.function2 {
             l = subString(node: node.leftChild as! EquationNode)
             r = subString(node: node.rightChild as! EquationNode)
-            str = s + "(" + l + "," + r + ")"
+            switch l {
+            case "2" :
+                s = "lb"
+                str = s + "(" + r + ")"
+            case "10" :
+                s = "lg"
+                str = s + "(" + r + ")"
+            case "\(M_E)" :
+                s = "ln"
+                str = s + "(" + r + ")"
+            default:
+                str = s + "(" + l + "," + r + ")"
+            }
         }else {
             if let lc = node.leftChild as? EquationNode{
                 l = subString(node: lc)
