@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C50D7D291D1AE2F800FB622A /* TreeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C50D7D281D1AE2F800FB622A /* TreeViewController.swift */; };
 		C58151961D11191B00CF4C6E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151951D11191B00CF4C6E /* AppDelegate.swift */; };
 		C58151981D11191B00CF4C6E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151971D11191B00CF4C6E /* ViewController.swift */; };
 		C581519B1D11191B00CF4C6E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C58151991D11191B00CF4C6E /* Main.storyboard */; };
@@ -15,6 +16,11 @@
 		C58151A31D11191B00CF4C6E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C58151A11D11191B00CF4C6E /* LaunchScreen.storyboard */; };
 		C58151AE1D11191B00CF4C6E /* MJCCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151AD1D11191B00CF4C6E /* MJCCTests.swift */; };
 		C58151B91D11191B00CF4C6E /* MJCCUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151B81D11191B00CF4C6E /* MJCCUITests.swift */; };
+		C58151CC1D111DF700CF4C6E /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151CB1D111DF700CF4C6E /* Lexer.swift */; };
+		C58151CF1D112F2E00CF4C6E /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151CE1D112F2E00CF4C6E /* Token.swift */; };
+		C58151D11D12A26200CF4C6E /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151D01D12A26200CF4C6E /* Parser.swift */; };
+		C58151D51D13A7FE00CF4C6E /* EquationTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151D41D13A7FE00CF4C6E /* EquationTree.swift */; };
+		C58151D91D13D11C00CF4C6E /* TreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58151D81D13D11C00CF4C6E /* TreeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C50D7D281D1AE2F800FB622A /* TreeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TreeViewController.swift; sourceTree = "<group>"; };
 		C58151921D11191B00CF4C6E /* MJCC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MJCC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C58151951D11191B00CF4C6E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C58151971D11191B00CF4C6E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -49,6 +56,11 @@
 		C58151B41D11191B00CF4C6E /* MJCCUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MJCCUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C58151B81D11191B00CF4C6E /* MJCCUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MJCCUITests.swift; sourceTree = "<group>"; };
 		C58151BA1D11191B00CF4C6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C58151CB1D111DF700CF4C6E /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lexer.swift; sourceTree = "<group>"; };
+		C58151CE1D112F2E00CF4C6E /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
+		C58151D01D12A26200CF4C6E /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		C58151D41D13A7FE00CF4C6E /* EquationTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EquationTree.swift; sourceTree = "<group>"; };
+		C58151D81D13D11C00CF4C6E /* TreeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TreeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,8 +111,14 @@
 		C58151941D11191B00CF4C6E /* MJCC */ = {
 			isa = PBXGroup;
 			children = (
-				C58151951D11191B00CF4C6E /* AppDelegate.swift */,
 				C58151971D11191B00CF4C6E /* ViewController.swift */,
+				C50D7D281D1AE2F800FB622A /* TreeViewController.swift */,
+				C58151D81D13D11C00CF4C6E /* TreeView.swift */,
+				C58151D41D13A7FE00CF4C6E /* EquationTree.swift */,
+				C58151D01D12A26200CF4C6E /* Parser.swift */,
+				C58151CB1D111DF700CF4C6E /* Lexer.swift */,
+				C58151CE1D112F2E00CF4C6E /* Token.swift */,
+				C58151951D11191B00CF4C6E /* AppDelegate.swift */,
 				C58151991D11191B00CF4C6E /* Main.storyboard */,
 				C581519F1D11191B00CF4C6E /* Assets.xcassets */,
 				C58151A11D11191B00CF4C6E /* LaunchScreen.storyboard */,
@@ -263,7 +281,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				C58151981D11191B00CF4C6E /* ViewController.swift in Sources */,
+				C50D7D291D1AE2F800FB622A /* TreeViewController.swift in Sources */,
+				C58151CF1D112F2E00CF4C6E /* Token.swift in Sources */,
+				C58151D51D13A7FE00CF4C6E /* EquationTree.swift in Sources */,
+				C58151D11D12A26200CF4C6E /* Parser.swift in Sources */,
+				C58151D91D13D11C00CF4C6E /* TreeView.swift in Sources */,
 				C58151961D11191B00CF4C6E /* AppDelegate.swift in Sources */,
+				C58151CC1D111DF700CF4C6E /* Lexer.swift in Sources */,
 				C581519E1D11191B00CF4C6E /* MJCC.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -408,10 +432,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = MJCC/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mjsaka.MJCC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -419,10 +448,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = MJCC/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mjsaka.MJCC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
@@ -491,6 +524,7 @@
 				C58151BF1D11191B00CF4C6E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C58151C01D11191B00CF4C6E /* Build configuration list for PBXNativeTarget "MJCCTests" */ = {
 			isa = XCConfigurationList;
@@ -499,6 +533,7 @@
 				C58151C21D11191B00CF4C6E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C58151C31D11191B00CF4C6E /* Build configuration list for PBXNativeTarget "MJCCUITests" */ = {
 			isa = XCConfigurationList;
@@ -507,6 +542,7 @@
 				C58151C51D11191B00CF4C6E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
