@@ -18,11 +18,11 @@
  INTEGER: NON_ZERO_NUM(NUM)*
  FLOAT: (INTERGER|ZERO)'.'(NUM)*
  
- FUNCTION1: sin | cos | tan | cot | arcsin | arccos | arctan | arccot
- FUNCTION1T2: lg | ln | lb
- FUNCTION2: log
+ TRIGONOMETRIC: sin | cos | tan | cot | asin | acos | atan | acot
+ logarithm2: log
  
- FACTORIAL: ! | !!
+ FACTORIAL: ! 
+ DOUBLE_FACTORIAL: !!
  POWER_AND_ROOT: ^ | ~
  MULTIPLY_AND_DIVIDE: * | /
  PLUS_AND_MINUS: + | -
@@ -32,25 +32,32 @@ import UIKit
 enum TokenType : UInt {
     case eof = 0
     
-    case leftBracket = 1 //(
-    case rightBracket = 2 //)
-    case comma  = 3 //,
+    case leftBracket //(
+    case rightBracket //)
+    case comma //,
     
-    case variable = 4 //${NAME}
-    case integer = 5
-    case float = 6
+    case variable //${NAME}
+    case integer
+    case float
+    case const
     
-    case powerAndRoot = 7  //^  ~
+    case power //^
+    case root  //~
 
-    case function1 = 8 //cot  tan  sin  cos
-    case function1t2 = 9 //lg ln lb  -->  log
-    case function2 = 10 // log
+    case trigonometric //cot  tan  sin  cos
+    case logarithm1 //ln lg lb
+    case logarithm2  // log
     
-    case factorial = 11 //!  !!
-    case multiplyAndDivide  = 12 //*  /
-    case plusAndMinus  = 13 //+  -
+    case factorial //! 
+    case doubleFactorial //!!
     
-    case equal  = 14 //=
+    case divide //÷
+    case multiply //*
+    
+    case minus // -
+    case plus // +
+    
+    case equal//=
 }
 
 class Token: NSObject {
@@ -61,6 +68,6 @@ class Token: NSObject {
         self.text = text
     }
     override var description: String {
-        return "<'\(type)','\(text)'>"
+        return "<'\(type)' , '\(text)'>"
     }
 }

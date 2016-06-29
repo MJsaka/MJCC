@@ -69,32 +69,32 @@ class Lexer: NSObject {
             case "=" :
                 consume()
                 return Token(type: TokenType.equal, text: "equal")
-            case "$" :
+            case "{" :
                 return variable()
             case "0" ... "9" :
                 return number()
             case "a" ... "z" , "A" ... "Z" :
-                return function()
+                return functionOrConst()
             case "!" :
                 return factorial()
             case "^" :
                 consume()
-                return Token(type: TokenType.powerAndRoot, text: "power")
+                return Token(type: TokenType.power, text: "power")
             case "~" :
                 consume()
-                return Token(type: TokenType.powerAndRoot, text: "root")
+                return Token(type: TokenType.root, text: "root")
             case "*" :
                 consume()
-                return Token(type: TokenType.multiplyAndDivide,text: "multiply")
+                return Token(type: TokenType.multiply,text: "multiply")
             case "/" :
                 consume()
-                return Token(type: TokenType.multiplyAndDivide,text: "divide")
+                return Token(type: TokenType.divide,text: "divide")
             case "+" :
                 consume()
-                return Token(type: TokenType.plusAndMinus,text: "plus")
+                return Token(type: TokenType.plus,text: "plus")
             case "-" :
                 consume()
-                return Token(type: TokenType.plusAndMinus,text: "minus")
+                return Token(type: TokenType.minus,text: "minus")
             default:
                 break
             }
@@ -108,17 +108,15 @@ class Lexer: NSObject {
         }
     }
     func factorial() -> Token {
+        var type : TokenType = TokenType.factorial
         var text : String = "factorial"
         match("!")
         if c == "!" {
-            match("!")
+            type = TokenType.doubleFactorial
             text = "doubleFactorial"
+            match("!")
         }
-        if c == "!" {
-            let ex : NSException = NSException(name: "TokeyError", reason: "too much '!'", userInfo: nil)
-            ex.raise()
-        }
-        return Token(type: TokenType.factorial, text: text)
+        return Token(type: type, text: text)
     }
     
     func number() -> Token {
@@ -149,8 +147,7 @@ class Lexer: NSObject {
     }
     
     func variable() -> Token {
-        var text : String = String()
-        consume()
+        var text : String = String("{")
         match("{")
         if !isLetter(){
             let ex : NSException = NSException(name: "TokeyError", reason: "first character for variable name must be letter", userInfo: nil)
@@ -163,11 +160,12 @@ class Lexer: NSObject {
             consume()
         }
         match("}")
+        text += "}"
         return Token(type: TokenType.variable, text: text)
     }
-    func function() -> Token {
+    func functionOrConst() -> Token {
         var text : String = String(c)
-        var type : TokenType = TokenType.function1
+        var type : TokenType = TokenType.trigonometric
         consume()
         
         while isLetter() {
@@ -175,12 +173,14 @@ class Lexer: NSObject {
             consume()
         }
         switch text {
-        case "cot" , "tan" , "sin" , "cos" , "arcsin" , "arccos" , "arctan" , "arccot" :
-            type = TokenType.function1
-        case "ln" , "lg" , "lb" :
-            type = TokenType.function1t2
+        case "cot" , "tan" , "sin" , "cos" , "asin" , "acos" , "atan" , "acot":
+            type = TokenType.trigonometric
+        case "lg" , "ln" , "lb" :
+            type = TokenType.logarithm1
         case "log" :
-            type = TokenType.function2
+            type = TokenType.logarithm2
+        case "e" , "PI" :
+            type = TokenType.const
         default:
             let ex : NSException = NSException(name: "TokeyError", reason: "unknown fuction \"\(text)\"", userInfo: nil)
             ex.raise()

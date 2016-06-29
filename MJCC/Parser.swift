@@ -17,12 +17,13 @@
  
  INTEGER: NON_ZERO_NUM(NUM)*
  FLOAT: (INTERGER|ZERO)'.'(NUM)*
+ CONST: e , PI
  
- FUNCTION1: sin | cos | tan | cot | arcsin | arccos | arctan | arccot
- FUNCTION1T2: lg | ln | lb
- FUNCTION2: log
+ trigonometric: sin | cos | tan | cot | asin | acos | atan | acot
+ logarithm2: log
  
- FACTORIAL: ! | !!
+ FACTORIAL: ! 
+ DOUBLE_FACTORIAL: !!
  POWER_AND_ROOT: ^ | ~
  MULTIPLY_AND_DIVIDE: * | /
  PLUS_AND_MINUS: + | -
@@ -30,11 +31,12 @@
  META:  INTEGER | VARIABLE | FLOAT | '('EXP')'
  
  EXP0:  META(POWER_AND_ROOT META)? |
-        INTERGER FACTORIALIR | 
-        FUNCTION1 META |
-        FUNCTION2'('EXP','EXP')'
+        INTERGER (FACTORIAL||DOUBLE_FACTORIAL) |
+        trigonometric META |
+        logarithm1 META |
+        logarithm2'('EXP','EXP')'
  EXP1:  EXP0 (MULTIPLY_AND_DIVIDE EXP0)*
- EXP:   EXP1 (PLUS_AND_MINUS EXP0)*
+ EXP:   EXP1 (PLUS_AND_MINUS EXP1)*
  PARSE:  EXP = EXP
  */
 import UIKit
@@ -80,30 +82,13 @@ class Parser: NSObject {
     }
     func exp0() -> EquationNode  {
         switch lookahead.type {
-        case TokenType.function1 :
-            let node = match(TokenType.function1)
+        case TokenType.trigonometric , TokenType.logarithm1:
+            let node = match(lookahead.type)
             node.leftChild = meta()
             node.leftChild?.father = node
             return node
-        case TokenType.function1t2 :
-            let node = EquationNode(token: Token(type: TokenType.function2, text: "log"))
-            switch lookahead.text {
-            case "ln":
-                node.leftChild = EquationNode(token: Token(type: TokenType.float, text: String(M_E)))
-            case "lg":
-                node.leftChild = EquationNode(token: Token(type: TokenType.float, text: "10"))
-            case "lb":
-                node.leftChild = EquationNode(token: Token(type: TokenType.float, text: "2"))
-            default:
-                break
-            }
-            node.leftChild?.father = node
-            match(TokenType.function1t2)
-            node.rightChild = meta()
-            node.rightChild?.father = node
-            return node
-        case TokenType.function2 :
-            let node = match(TokenType.function2)
+        case TokenType.logarithm2 :
+            let node = match(TokenType.logarithm2)
             match(TokenType.leftBracket)
             node.leftChild = exp()
             match(TokenType.comma)
@@ -115,13 +100,13 @@ class Parser: NSObject {
             return node
         case TokenType.integer :
             let node = meta()
-            if lookahead.type == TokenType.factorial {
-                let father = match(TokenType.factorial)
+            if lookahead.type == TokenType.factorial || lookahead.type == TokenType.doubleFactorial  {
+                let father = match(lookahead.type)
                 father.leftChild = node
                 father.leftChild?.father = father
                 return father
-            }else if lookahead.type == TokenType.powerAndRoot {
-                let father = match(TokenType.powerAndRoot)
+            }else if lookahead.type == TokenType.power || lookahead.type == TokenType.root {
+                let father = match(lookahead.type)
                 father.leftChild = node
                 father.rightChild = meta()
                 father.leftChild?.father = father
@@ -130,10 +115,10 @@ class Parser: NSObject {
             }else {
                 return node
             }
-        case TokenType.float , TokenType.variable , TokenType.leftBracket:
+        case TokenType.float , TokenType.variable , TokenType.const, TokenType.leftBracket:
             let node = meta()
-            if lookahead.type == TokenType.powerAndRoot {
-                let father = match(TokenType.powerAndRoot)
+            if lookahead.type == TokenType.power || lookahead.type == TokenType.root {
+                let father = match(lookahead.type)
                 father.leftChild = node
                 father.rightChild = meta()
                 father.leftChild?.father = father
@@ -150,8 +135,8 @@ class Parser: NSObject {
     }
     func exp1() -> EquationNode {
         var node = exp0()
-        while lookahead.type == TokenType.multiplyAndDivide {
-            let father = match(TokenType.multiplyAndDivide)
+        while lookahead.type == TokenType.multiply || lookahead.type == TokenType.divide {
+            let father = match(lookahead.type)
             father.leftChild = node
             father.rightChild = exp0()
             father.leftChild?.father = father
@@ -163,7 +148,7 @@ class Parser: NSObject {
     func exp() -> EquationNode {
         var node : EquationNode
         if lookahead.text == "minus" {
-            node = match(TokenType.plusAndMinus)
+            node = match(TokenType.minus)
             let t = Token(type: TokenType.float, text: "0")
             node.leftChild = EquationNode(token: t)
             node.leftChild?.father = node
@@ -172,8 +157,8 @@ class Parser: NSObject {
         }else{
             node = exp1()
         }
-        while lookahead.type == TokenType.plusAndMinus {
-            let father = match(TokenType.plusAndMinus)
+        while lookahead.type == TokenType.plus || lookahead.type == TokenType.minus {
+            let father = match(lookahead.type)
             
             father.leftChild = node
             father.rightChild = exp1()
