@@ -33,7 +33,7 @@ class ViewController: UIViewController{
         inputTextView.text = tree.equationString()
         tree.transformForVariable(0)
         outputTextView.text = tree.equationString()
-        resultLabel.text = tree.variables[0].token.text + " = \(tree.subEquationValue(node: tree.root.rightChild as! EquationNode))"
+        resultLabel.text = tree.variables[0].token.text + " = \(tree.subEquationValue(node: tree.root.rightChild! ))"
     }
 
     override func didReceiveMemoryWarning() {

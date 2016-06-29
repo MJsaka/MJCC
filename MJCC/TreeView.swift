@@ -15,7 +15,7 @@ struct NodePosition {
 }
 
 class TreeView: UIView {
-    var root : BNode!
+    var root : EquationNode!
     var depth : CGFloat!
     let radius : CGFloat = 20
     let fontSize : CGFloat = 18
@@ -31,7 +31,7 @@ class TreeView: UIView {
         self.draw(root, pos: pos, context: context)
     }
     
-    func draw(node : BNode , pos : NodePosition , context : CGContextRef){
+    func draw(node : EquationNode , pos : NodePosition , context : CGContextRef){
         let p : CGPoint = CGPoint(x: (pos.left + pos.right) / 2, y: pos.vertical)
         var lpos : NodePosition
         var rpos : NodePosition
@@ -64,7 +64,7 @@ class TreeView: UIView {
         self.drawNode(node, context: context, pos: p)
     }
     
-    func drawNode(node : BNode , context : CGContextRef , pos : CGPoint) {
+    func drawNode(node : EquationNode , context : CGContextRef , pos : CGPoint) {
         CGContextAddArc(context, pos.x, pos.y, radius, 0, 2 * CGFloat(M_PI), 0)
         CGContextSetLineWidth(context, 2)
         CGContextSetAlpha(context, 1.0)
@@ -72,7 +72,7 @@ class TreeView: UIView {
         CGContextSetFillColorWithColor(context, UIColor.whiteColor().CGColor)
         CGContextDrawPath(context, CGPathDrawingMode.FillStroke)
 
-        let title : NSString = NSString(string: (node as! EquationNode).token.text)
+        let title : NSString = NSString(string: node.name())
         
         let color: UIColor = UIColor.darkGrayColor()
         let font = UIFont(name: "PingFang SC", size: fontSize)
@@ -101,14 +101,14 @@ class TreeView: UIView {
         CGContextStrokePath(context)
     }
     
-    static func minimumSize(root : BNode) -> CGSize {
+    static func minimumSize(root : EquationNode) -> CGSize {
         let depth = self.depth(root)
         let w = pow(2, depth - 1) * 60
         let h = depth * 60
         return CGSize(width: w, height: h)
     }
     
-    static func depth(node : BNode) -> CGFloat {
+    static func depth(node : EquationNode) -> CGFloat {
         if node.leftChild == nil && node.rightChild == nil {
             return 1
         }else {

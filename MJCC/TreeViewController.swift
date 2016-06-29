@@ -17,7 +17,7 @@ class TreeViewController: UIViewController , UIScrollViewDelegate {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        var size = TreeView.minimumSize(tree.root as! EquationNode)
+        var size = TreeView.minimumSize(tree.root )
         if size.height < self.view.frame.height {
             size.height = self.view.frame.height
         }

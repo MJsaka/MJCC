@@ -29,54 +29,35 @@ public func roo(base : Double ,  times: Double) -> Double {
     return x
 }
 
-
-class BNode: NSObject {
-    var father : BNode?
-    var leftChild : BNode?
-    var rightChild : BNode?
-}
-class BTree: NSObject {
-    let root : BNode
-    init(root : BNode) {
-        self.root = root
-    }
-    static func traverseTreePreOrder(root node : BNode , visitor visit : (BNode) -> Void) {
-        visit(node)
-        if let l = node.leftChild {
-            traverseTreePreOrder(root: l , visitor: visit)
-        }
-        if let r = node.rightChild {
-            traverseTreePreOrder(root: r, visitor: visit)
-        }
-    }
-    static func traverseTreeInOrder(root node : BNode , visitor visit : (BNode) -> Void) {
-        if let l = node.leftChild {
-            traverseTreePreOrder(root: l , visitor: visit)
-        }
-        visit(node)
-        if let r = node.rightChild {
-            traverseTreePreOrder(root: r, visitor: visit)
-        }
-    }
-    static func traverseTreePostOrder(root node : BNode , visitor visit : (BNode) -> Void) {
-        if let l = node.leftChild {
-            traverseTreePreOrder(root: l , visitor: visit)
-        }
-        if let r = node.rightChild {
-            traverseTreePreOrder(root: r, visitor: visit)
-        }
-        visit(node)
-    }
-}
-
-class EquationNode: BNode {
+class EquationNode: NSObject{
+    var father : EquationNode?
+    var leftChild : EquationNode?
+    var rightChild : EquationNode?
     var token : Token
+    //运算符名字转换表
+    static let operatorNameDict = ["plus"              : "+",
+                            "minus"             : "-",
+                            "multiply"          : "*",
+                            "divide"            : "/",
+                            "power"             : "^",
+                            "root"              : "~",
+                            "factorial"         : "!",
+                            "doubleFactorial"   : "!!",
+                            "equal"             : "="]
     init(token : Token) {
         self.token = token
     }
+    func name() -> String {
+        if let s = EquationNode.operatorNameDict[self.token.text]{
+            return s
+        }
+        return token.text
+    }
 }
 
-class EquationTree: BTree {
+class EquationTree: NSObject {
+    let root : EquationNode
+    //变量表
     var variables : [EquationNode]
     //三角函数直接运算表
     let directTransDict1 = ["sin"       : "arcsin",
@@ -115,11 +96,10 @@ class EquationTree: BTree {
                             "log"               : "log"]
     override init(root : BNode) {
         self.variables = [EquationNode]()
-        super.init(root: root)
-        BTree.traverseTreePreOrder(root: root) { (node) in
-            let n = node as! EquationNode
-            if n.token.type == TokenType.variable {
-                self.variables.append(n)
+        super.init()
+        EquationTree.traverseTreePreOrder(root: root) { (node) in
+            if node.token.type == TokenType.variable {
+                self.variables.append(node)
             }
         }
     }
