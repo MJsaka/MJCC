@@ -120,29 +120,33 @@ class Lexer: NSObject {
     }
     
     func number() -> Token {
-        var text : String = String(c)
+        var text : String = ""
         var type : TokenType = TokenType.integer
         if isZero() {
             type = TokenType.float
-            consume()
-            text.append(c)
+            match("0")
+            text += "0"
             match(".")
-        }
-        consume()
-        while isNumber() {
-            text.append(c)
-            consume()
-        }
-        if isDot() {
-            type = TokenType.float
-            text.append(c)
-            consume()
+            text += "."
             while isNumber() {
                 text.append(c)
                 consume()
             }
+        }else{
+            while isNumber() {
+                text.append(c)
+                consume()
+            }
+            if isDot() {
+                type = TokenType.float
+                match(".")
+                text += "."
+                while isNumber() {
+                    text.append(c)
+                    consume()
+                }
+            }
         }
-       
         return Token(type: type, text: text)
     }
     
