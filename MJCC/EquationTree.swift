@@ -124,60 +124,122 @@ class EquationTree: NSObject {
     
     //计算某结点的子式的值
     func subEquationValue(node node : EquationNode) -> Double {
+        var v : Double!
         switch node.token.type {
         case TokenType.integer , TokenType.float:
-            return Double(node.token.text)!
-        case TokenType.function1 :
+            v = Double(node.token.text)!
+        case TokenType.const :
+            if node.token.text == "e" {
+                v = M_E
+            }
+            if node.token.text == "PI" {
+                v = M_PI
+            }
+        case TokenType.trigonometric :
+            let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
+            let measure = userDefaults.stringForKey("measurement")
+            let subValue = subEquationValue(node: node.leftChild!)
+            
             switch node.token.text {
             case "sin":
-                return sin(subEquationValue(node: node.leftChild as! EquationNode))
+                if measure == "degree" {
+                    let angle = subValue / 180 * M_PI
+                    v = sin(angle)
+                }else{
+                    v = sin(subValue)
+                }
             case "cos" :
-                return cos(subEquationValue(node: node.leftChild  as! EquationNode))
+                if measure == "degree" {
+                    let angle = subValue / 180 * M_PI
+                    v = cos(angle)
+                }else {
+                    v = cos(subValue)
+                }
             case "tan" :
-                return tan(subEquationValue(node: node.leftChild  as! EquationNode))
+                if measure == "degree" {
+                    let angle = subValue / 180 * M_PI
+                    v = tan(angle)
+                }else{
+                    v = tan(subValue)
+                }
             case "cot" :
-                return tan(M_PI_2 - subEquationValue(node: node.leftChild  as! EquationNode))
-            case "arcsin" :
-                return asin(subEquationValue(node: node.leftChild as! EquationNode))
-            case "arccos" :
-                return acos(subEquationValue(node: node.leftChild as! EquationNode))
-            case "arctan" :
-                return atan(subEquationValue(node: node.leftChild as! EquationNode))
-            case "arccot" :
-                let t = atan(subEquationValue(node: node.leftChild as! EquationNode))
-                return t > 0 ? M_PI_2 - t : 0 - M_PI_2 - t
+                if measure == "degree" {
+                    let angle = subValue / 180 * M_PI
+                    v = tan(M_PI_2 - angle)
+                }else {
+                    v = tan(M_PI_2 - subValue)
+                }
+            case "asin" :
+                let r = asin(subValue)
+                if measure == "degree" {
+                    v = r * 180 / M_PI
+                }else{
+                    v = r
+                }
+            case "acos" :
+                let r = acos(subValue)
+                if measure == "degree" {
+                    v = r * 180 / M_PI
+                }else{
+                    v = r
+                }
+            case "atan" :
+                let r = atan(subValue)
+                if measure == "degree" {
+                    v = r * 180 / M_PI
+                }else {
+                    v = r
+                }
+            case "acot" :
+                let t = atan(subValue)
+                let r = t > 0 ? M_PI_2 - t : 0 - M_PI_2 - t
+                if measure == "degree" {
+                    v = r * 180 / M_PI
+                }else{
+                    v = r
+                }
             default:
-                return 0
+                break
             }
-        case TokenType.function2 :
-            //根据换底公式:log(X , Y) = log(a,Y) / log(a,X)
-            return log2(subEquationValue(node: node.rightChild as! EquationNode)) / log2(subEquationValue(node: node.leftChild as! EquationNode))
-        case TokenType.factorial :
-            if node.token.text == "factorial" {
-                return Double(factorial(Int(subEquationValue(node: node.leftChild as! EquationNode)), step: 1))
-            }else{
-                return Double(factorial(Int(subEquationValue(node: node.leftChild as! EquationNode)), step: 2))
-            }
-        default:
-            let l : Double = subEquationValue(node: node.leftChild as! EquationNode)
-            let r : Double = subEquationValue(node: node.rightChild as! EquationNode)
+        case TokenType.logarithm1 :
             switch node.token.text {
-            case "plus":
-                return l + r
-            case "minus" :
-                return l - r
-            case "multiply" :
-                return l * r
-            case "divide" :
-                return l / r
-            case "power" :
-                return pow(l , r)
-            case "root" :
-                return roo(l, times: r)
+            case "lg" :
+                v = log10(subEquationValue(node: node.leftChild! ))
+            case "ln" :
+                v = log(subEquationValue(node: node.leftChild! ))
+            case "lb" :
+                v = log2(subEquationValue(node: node.leftChild! ))
             default:
-                return 0
+                break
+            }
+        case TokenType.logarithm2 :
+            //根据换底公式:log(X , Y) = log(a,Y) / log(a,X)
+            v = log2(subEquationValue(node: node.rightChild! )) / log2(subEquationValue(node: node.leftChild! ))
+        case TokenType.factorial :
+            v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 1))
+        case TokenType.doubleFactorial :
+            v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 2))
+        default:
+            let l : Double = subEquationValue(node: node.leftChild! )
+            let r : Double = subEquationValue(node: node.rightChild! )
+            switch node.token.type {
+            case TokenType.plus:
+                v = l + r
+            case TokenType.minus :
+                v = l - r
+            case TokenType.multiply :
+                v = l * r
+            case TokenType.divide :
+                v = l / r
+            case TokenType.power :
+                v = pow(l , r)
+            case TokenType.root :
+                v = pow(l, 1/r)
+            default:
+                break
             }
         }
+        return v
     }
     
     //从表达式树生成表达式串
@@ -185,57 +247,65 @@ class EquationTree: NSObject {
         return subString(node : root )
     }
     func subString(node node : EquationNode) -> String{
-        var str : String = ""
-        var s : String = ""
+        let s : String = node.name()
         var l : String = ""
         var r : String = ""
-        
-        switch node.token.type {
-        case TokenType.variable :
-            s = "${" + node.token.text + "}"
-        case TokenType.integer , TokenType.float:
-            s = node.token.text
-        case TokenType.plusAndMinus , TokenType.multiplyAndDivide , TokenType.equal:
-            s = " " + operatorNameDict[node.token.text]! + " "
-        default:
-            s = operatorNameDict[node.token.text]!
+        var str : String
+
+        if let lc = node.leftChild {
+            l = subString(node: lc)
+        }
+        if let rc = node.rightChild {
+            r = subString(node: rc)
         }
         
-        if node.token.type == TokenType.function2 {
-            l = subString(node: node.leftChild as! EquationNode)
-            r = subString(node: node.rightChild as! EquationNode)
-            switch l {
-            case "2" :
-                s = "lb"
-                str = s + "(" + r + ")"
-            case "10" :
-                s = "lg"
-                str = s + "(" + r + ")"
-            case "\(M_E)" :
-                s = "ln"
-                str = s + "(" + r + ")"
-            default:
-                str = s + "(" + l + "," + r + ")"
+        switch node.token.type {
+        case TokenType.logarithm1 , TokenType.trigonometric:
+            if node.leftChild!.token.type.rawValue > TokenType.float.rawValue
+            {
+                l = "(" + l + ")"
             }
-        }else {
-            if let lc = node.leftChild as? EquationNode{
-                l = subString(node: lc)
-                if lc.token.type.rawValue > node.token.type.rawValue {
-                    l = "(" + l + ")"
-                }
+            str = s + l
+        case TokenType.logarithm2 :
+            str = s + "(" + l + "," + r  + ")"
+        case TokenType.power , TokenType.root :
+            if node.leftChild!.token.type.rawValue > TokenType.float.rawValue
+            {
+                l = "(" + l + ")"
             }
-            if let rc = node.rightChild as? EquationNode {
-                r = subString(node: rc)
-                if rc.token.type.rawValue > node.token.type.rawValue {
-                    r = "(" + r + ")"
-                }
+            if node.rightChild!.token.type.rawValue > TokenType.float.rawValue
+            {
+                r = "(" + r + ")"
             }
-            switch node.token.type {
-            case TokenType.function1:
-                str = s + l
-            default:
-                str = l + s + r
+            str = l + s + r
+        case TokenType.multiply :
+            if node.leftChild!.token.type.rawValue > TokenType.multiply.rawValue
+            {
+                l = "(" + l + ")"
             }
+            if node.rightChild!.token.type.rawValue > TokenType.multiply.rawValue
+            {
+                r = "(" + r + ")"
+            }
+            str = l + s + r
+        case TokenType.divide :
+            if node.leftChild!.token.type.rawValue > TokenType.multiply.rawValue
+            {
+                l = "(" + l + ")"
+            }
+            if node.rightChild!.token.type.rawValue >= TokenType.divide.rawValue
+            {
+                r = "(" + r + ")"
+            }
+            str = l + s + r
+        case TokenType.minus :
+            if node.rightChild!.token.type.rawValue >= TokenType.minus.rawValue
+            {
+                r = "(" + r + ")"
+            }
+            str = l + s + r
+        default:
+            str = l + s + r
         }
         return str
     }

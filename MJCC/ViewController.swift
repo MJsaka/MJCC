@@ -22,6 +22,8 @@ class ViewController: UIViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let userDefaults = NSUserDefaults.standardUserDefaults()
+        userDefaults.setObject("degree", forKey: "measurement")
         // Do any additional setup after loading the view, typically from a nib.
     }
     
