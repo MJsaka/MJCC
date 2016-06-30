@@ -75,19 +75,20 @@ class EquationTree: NSObject {
                             "divide"    : "multiply",
                             "power"     : "root",
                             "root"      : "power"]
-    static let leftChildTransformTokenTypeDict = ["plus"      : TokenType.minus,
-                            "minus"     : TokenType.plus,
-                            "multiply"  : TokenType.divide,
-                            "divide"    : TokenType.multiply,
-                            "power"     : TokenType.root,
-                            "root"      : TokenType.power]
+    static let leftChildTransformTokenTypeDict : [String : TokenType] =
+        ["plus"      : .minus,
+         "minus"     : .plus,
+         "multiply"  : .divide,
+         "divide"    : .multiply,
+         "power"     : .root,
+         "root"      : .power]
    
     init(root : EquationNode) {
         self.root = root
         self.variables = [EquationNode]()
         super.init()
         EquationTree.traverseTreePreOrder(root: root) { (node) in
-            if node.token.type == TokenType.variable {
+            if node.token.type == .variable {
                 self.variables.append(node)
             }
         }
@@ -126,16 +127,16 @@ class EquationTree: NSObject {
     func subEquationValue(node node : EquationNode) -> Double {
         var v : Double!
         switch node.token.type {
-        case TokenType.integer , TokenType.float:
+        case .integer , .float:
             v = Double(node.token.text)!
-        case TokenType.const :
+        case .const :
             if node.token.text == "e" {
                 v = M_E
             }
             if node.token.text == "PI" {
                 v = M_PI
             }
-        case TokenType.trigonometric :
+        case .trigonometric :
             let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
             let measure = userDefaults.stringForKey("measurement")
             let subValue = subEquationValue(node: node.leftChild!)
@@ -201,7 +202,7 @@ class EquationTree: NSObject {
             default:
                 break
             }
-        case TokenType.logarithm1 :
+        case .logarithm1 :
             switch node.token.text {
             case "lg" :
                 v = log10(subEquationValue(node: node.leftChild! ))
@@ -212,28 +213,28 @@ class EquationTree: NSObject {
             default:
                 break
             }
-        case TokenType.logarithm2 :
+        case .logarithm2 :
             //根据换底公式:log(X , Y) = log(a,Y) / log(a,X)
             v = log2(subEquationValue(node: node.rightChild! )) / log2(subEquationValue(node: node.leftChild! ))
-        case TokenType.factorial :
+        case .factorial :
             v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 1))
-        case TokenType.doubleFactorial :
+        case .doubleFactorial :
             v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 2))
         default:
             let l : Double = subEquationValue(node: node.leftChild! )
             let r : Double = subEquationValue(node: node.rightChild! )
             switch node.token.type {
-            case TokenType.plus:
+            case .plus:
                 v = l + r
-            case TokenType.minus :
+            case .minus :
                 v = l - r
-            case TokenType.multiply :
+            case .multiply :
                 v = l * r
-            case TokenType.divide :
+            case .divide :
                 v = l / r
-            case TokenType.power :
+            case .power :
                 v = pow(l , r)
-            case TokenType.root :
+            case .root :
                 v = pow(l, 1/r)
             default:
                 break
@@ -260,15 +261,15 @@ class EquationTree: NSObject {
         }
         
         switch node.token.type {
-        case TokenType.logarithm1 , TokenType.trigonometric:
+        case .logarithm1 , .trigonometric:
             if node.leftChild!.token.type.rawValue > TokenType.float.rawValue
             {
                 l = "(" + l + ")"
             }
             str = s + l
-        case TokenType.logarithm2 :
+        case .logarithm2 :
             str = s + "(" + l + "," + r  + ")"
-        case TokenType.power , TokenType.root :
+        case .power , .root :
             if node.leftChild!.token.type.rawValue > TokenType.float.rawValue
             {
                 l = "(" + l + ")"
@@ -278,7 +279,7 @@ class EquationTree: NSObject {
                 r = "(" + r + ")"
             }
             str = l + s + r
-        case TokenType.multiply :
+        case .multiply :
             if node.leftChild!.token.type.rawValue > TokenType.multiply.rawValue
             {
                 l = "(" + l + ")"
@@ -288,7 +289,7 @@ class EquationTree: NSObject {
                 r = "(" + r + ")"
             }
             str = l + s + r
-        case TokenType.divide :
+        case .divide :
             if node.leftChild!.token.type.rawValue > TokenType.multiply.rawValue
             {
                 l = "(" + l + ")"
@@ -298,7 +299,7 @@ class EquationTree: NSObject {
                 r = "(" + r + ")"
             }
             str = l + s + r
-        case TokenType.minus :
+        case .minus :
             if node.rightChild!.token.type.rawValue >= TokenType.minus.rawValue
             {
                 r = "(" + r + ")"
@@ -341,17 +342,17 @@ class EquationTree: NSObject {
     func transform(variable : EquationNode , father : EquationNode , grandfather : EquationNode)
     {
         //func(A) = B  ==>  A = -func(B)
-        if father.token.type == TokenType.trigonometric {
+        if father.token.type == .trigonometric {
             trigonometricTransform(variable, father: father, grandfather: grandfather)
             return
         }
         //lg lb ln
-        if father.token.type == TokenType.logarithm1 {
+        if father.token.type == .logarithm1 {
             logarithm1Transform(variable, father: father, grandfather: grandfather)
             return
         }
         //log
-        if father.token.type == TokenType.logarithm2 {
+        if father.token.type == .logarithm2 {
             logarithm2Transform(variable, father: father, grandfather: grandfather)
             return
         }
@@ -370,7 +371,7 @@ class EquationTree: NSObject {
     func trigonometricTransform(variable : EquationNode , father : EquationNode , grandfather : EquationNode)
     {
         let uncle : EquationNode = grandfather.rightChild!
-        let transNode = EquationNode(token: Token(type: TokenType.trigonometric, text: EquationTree.trigonometricTransformDict[father.token.text]!))
+        let transNode = EquationNode(token: Token(type: .trigonometric, text: EquationTree.trigonometricTransformDict[father.token.text]!))
         
         grandfather.leftChild = variable
         variable.father = grandfather
@@ -384,15 +385,15 @@ class EquationTree: NSObject {
     func logarithm1Transform(variable : EquationNode , father : EquationNode , grandfather : EquationNode)
     {
         let uncle : EquationNode = grandfather.rightChild!
-        let transNode = EquationNode(token: Token(type: TokenType.power, text:"power"))
+        let transNode = EquationNode(token: Token(type: .power, text:"power"))
         var brother : EquationNode!
         switch father.token.text {
         case "ln" :
-            brother = EquationNode(token: Token(type: TokenType.const, text: "e"))
+            brother = EquationNode(token: Token(type: .const, text: "e"))
         case "lb" :
-            brother = EquationNode(token: Token(type: TokenType.integer, text: "2"))
+            brother = EquationNode(token: Token(type: .integer, text: "2"))
         case "lg" :
-            brother = EquationNode(token: Token(type: TokenType.integer, text: "10"))
+            brother = EquationNode(token: Token(type: .integer, text: "10"))
         default:
             break
         }
@@ -416,10 +417,10 @@ class EquationTree: NSObject {
         var brother : EquationNode
         if variable == father.leftChild {
             brother = father.rightChild!
-            transNode = EquationNode(token: Token(type: TokenType.root, text:"root"))
+            transNode = EquationNode(token: Token(type: .root, text:"root"))
         }else{
             brother = father.leftChild!
-            transNode = EquationNode(token: Token(type: TokenType.power, text:"power"))
+            transNode = EquationNode(token: Token(type: .power, text:"power"))
         }
         grandfather.leftChild = variable
         variable.father = grandfather
@@ -466,12 +467,12 @@ class EquationTree: NSObject {
         let leftBrother : EquationNode = father.leftChild!
         
         switch father.token.type {
-        case TokenType.minus , TokenType.plus :
-            transNode = EquationNode(token: Token(type: TokenType.minus, text:"minus"))
-        case TokenType.multiply , TokenType.divide :
-            transNode = EquationNode(token: Token(type: TokenType.divide, text:"divide"))
+        case .minus , .plus :
+            transNode = EquationNode(token: Token(type: .minus, text:"minus"))
+        case .multiply , .divide :
+            transNode = EquationNode(token: Token(type: .divide, text:"divide"))
         default:
-            transNode = EquationNode(token: Token(type: TokenType.logarithm2, text:"log"))
+            transNode = EquationNode(token: Token(type: .logarithm2, text:"log"))
         }
         grandfather.leftChild = variable
         variable.father = grandfather
@@ -482,18 +483,18 @@ class EquationTree: NSObject {
         uncle.father = transNode
 
         switch father.token.type {
-        case TokenType.plus , TokenType.multiply:
+        case .plus , .multiply:
             transNode.leftChild = uncle
             transNode.rightChild = leftBrother
-        case TokenType.minus , TokenType.divide , TokenType.power , TokenType.root:
+        case .minus , .divide , .power , .root:
             transNode.leftChild = leftBrother
             transNode.rightChild = uncle
         default:
             break
         }
         if father.token.text == "root" {
-            let node = EquationNode(token: Token(type: TokenType.divide, text: "divide"))
-            let lnode = EquationNode(token: Token(type: TokenType.float, text: "1"))
+            let node = EquationNode(token: Token(type: .divide, text: "divide"))
+            let lnode = EquationNode(token: Token(type: .float, text: "1"))
             node.leftChild = lnode
             lnode.father = node
             node.rightChild = transNode

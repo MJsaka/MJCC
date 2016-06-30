@@ -52,7 +52,7 @@ class Parser: NSObject {
     }
     
     func consume() {
-        if lookahead.type != TokenType.eof {
+        if lookahead.type != .eof {
             lookahead = input.nextToken()
             print(lookahead)
         }
@@ -71,10 +71,10 @@ class Parser: NSObject {
     }
     func meta() -> EquationNode {
         switch lookahead.type {
-        case TokenType.leftBracket :
-            match(TokenType.leftBracket)
+        case .leftBracket :
+            match(.leftBracket)
             let node = exp()
-            match(TokenType.rightBracket)
+            match(.rightBracket)
             return node
         default:
             return match(lookahead.type)
@@ -82,30 +82,30 @@ class Parser: NSObject {
     }
     func exp0() -> EquationNode  {
         switch lookahead.type {
-        case TokenType.trigonometric , TokenType.logarithm1:
+        case .trigonometric , .logarithm1:
             let node = match(lookahead.type)
             node.leftChild = meta()
             node.leftChild?.father = node
             return node
-        case TokenType.logarithm2 :
-            let node = match(TokenType.logarithm2)
-            match(TokenType.leftBracket)
+        case .logarithm2 :
+            let node = match(.logarithm2)
+            match(.leftBracket)
             node.leftChild = exp()
-            match(TokenType.comma)
+            match(.comma)
             node.rightChild = exp()
-            match(TokenType.rightBracket)
+            match(.rightBracket)
             
             node.leftChild?.father = node
             node.leftChild?.father = node
             return node
-        case TokenType.integer :
+        case .integer :
             let node = meta()
-            if lookahead.type == TokenType.factorial || lookahead.type == TokenType.doubleFactorial  {
+            if lookahead.type == .factorial || lookahead.type == .doubleFactorial  {
                 let father = match(lookahead.type)
                 father.leftChild = node
                 father.leftChild?.father = father
                 return father
-            }else if lookahead.type == TokenType.power || lookahead.type == TokenType.root {
+            }else if lookahead.type == .power || lookahead.type == .root {
                 let father = match(lookahead.type)
                 father.leftChild = node
                 father.rightChild = meta()
@@ -115,9 +115,9 @@ class Parser: NSObject {
             }else {
                 return node
             }
-        case TokenType.float , TokenType.variable , TokenType.const, TokenType.leftBracket:
+        case .float , .variable , .const, .leftBracket:
             let node = meta()
-            if lookahead.type == TokenType.power || lookahead.type == TokenType.root {
+            if lookahead.type == .power || lookahead.type == .root {
                 let father = match(lookahead.type)
                 father.leftChild = node
                 father.rightChild = meta()
@@ -135,7 +135,7 @@ class Parser: NSObject {
     }
     func exp1() -> EquationNode {
         var node = exp0()
-        while lookahead.type == TokenType.multiply || lookahead.type == TokenType.divide {
+        while lookahead.type == .multiply || lookahead.type == .divide {
             let father = match(lookahead.type)
             father.leftChild = node
             father.rightChild = exp0()
@@ -148,8 +148,8 @@ class Parser: NSObject {
     func exp() -> EquationNode {
         var node : EquationNode
         if lookahead.text == "minus" {
-            node = match(TokenType.minus)
-            let t = Token(type: TokenType.float, text: "0")
+            node = match(.minus)
+            let t = Token(type: .float, text: "0")
             node.leftChild = EquationNode(token: t)
             node.leftChild?.father = node
             node.rightChild = exp1()
@@ -157,7 +157,7 @@ class Parser: NSObject {
         }else{
             node = exp1()
         }
-        while lookahead.type == TokenType.plus || lookahead.type == TokenType.minus {
+        while lookahead.type == .plus || lookahead.type == .minus {
             let father = match(lookahead.type)
             
             father.leftChild = node
@@ -171,10 +171,10 @@ class Parser: NSObject {
     }
     func parse() -> EquationTree {
         let left = exp()
-        let root = match(TokenType.equal)
+        let root = match(.equal)
         let right = exp()
         
-        match(TokenType.eof)
+        match(.eof)
         
         root.leftChild = left
         root.rightChild = right
