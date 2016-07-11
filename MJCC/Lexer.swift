@@ -151,20 +151,13 @@ class Lexer: NSObject {
     }
     
     func variable() -> Token {
-        var text : String = String("{")
+        var text : String = ""
         match("{")
-        if !isLetter(){
-            let ex : NSException = NSException(name: "TokeyError", reason: "first character for variable name must be letter", userInfo: nil)
-            ex.raise()
-        }
-        text.append(c)
-        consume()
-        while isLetter() || isNumber() {
+        while c != "}"{
             text.append(c)
             consume()
         }
         match("}")
-        text += "}"
         return Token(type: .variable, text: text)
     }
     func functionOrConst() -> Token {
