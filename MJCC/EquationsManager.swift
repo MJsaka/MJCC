@@ -39,6 +39,10 @@ class EquationsManager: NSObject {
         return equation
     }
     
+    class func deleteEquation(equation : Equation){
+        managedObjectContext.deleteObject(equation)
+    }
+    
     
     // MARK: - Core Data stack
     
