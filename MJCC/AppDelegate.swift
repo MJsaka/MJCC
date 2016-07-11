@@ -17,13 +17,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
 
-//        for c in 6 ... 9 {
-//            for i in 1 ... 5 {
-//                let name = "\(c)\(i)equation"
-//                let expr = "x = \(c) + \(i)"
-//                EquationsManager.insertEquation(name: name, expr: expr)
-//            }
-//        }
+        if EquationsManager.equations().count == 0 {
+            for c in ["a" , "b" , "c" , "d" , "z" , "m" , "毕" , "松"] {
+                for i in 1 ... 5 {
+                    let name = "\(c)\(i)"
+                    let expr = "{x} = {\(c)\(i)} + \(i)"
+                    EquationsManager.insertEquation(name: name, expr: expr)
+                }
+            }
+        }
+        
         return true
     }
 
