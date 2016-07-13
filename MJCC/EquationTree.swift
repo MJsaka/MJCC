@@ -118,40 +118,43 @@ class EquationTree: NSObject {
         visit(node)
     }
 
+    //返回结果变量
+    func resultVariable() -> String{
+        return root.leftChild!.token.text
+    }
     //返回所有的变量名
     func variables() -> [String] {
         var variables = [String]()
-        EquationTree.traverseTreePreOrder(root: root) { (node) in
+        EquationTree.traverseTreePreOrder(root: root.rightChild!) { (node) in
             if node.token.type == .variable {
-                variables.append(node.token.text)
+                if !variables.contains(node.token.text){
+                    variables.append(node.token.text)
+                }
             }
         }
         return variables
     }
-    //计算变量的值
-    func calculateVariable(variable : String) -> Double{
-        var variableNode : EquationNode!
-        EquationTree.traverseTreePreOrder(root: root) { (node) in
-            if node.token.text == variable {
-                variableNode = node
-            }
-        }
-        recursionTransform(variableNode)
+    func result() -> Double {
         return subEquationValue(node: root.rightChild!)
     }
+    //计算变量的值
+//    func calculateVariable(variable : String) -> Double{
+//        var variableNode : EquationNode!
+//        EquationTree.traverseTreePreOrder(root: root) { (node) in
+//            if node.token.text == variable {
+//                variableNode = node
+//            }
+//        }
+//        recursionTransform(variableNode)
+//        return subEquationValue(node: root.rightChild!)
+//    }
     
     //计算某结点的子式的值
     private func subEquationValue(node node : EquationNode) -> Double {
         var v : Double!
         switch node.token.type {
         case .variable:
-            
-            if let t = variablesValue[node.token.text] {
-                v = t
-            }else{
-                let ex : NSException = NSException(name: "VariableValue", reason: "Variable \(node.token.text) did not assign value", userInfo: nil)
-                ex.raise()
-            }
+            v = variablesValue[node.token.text]
         case .integer , .float:
             v = Double(node.token.text)!
         case .const :
