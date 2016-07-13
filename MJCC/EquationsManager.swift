@@ -9,6 +9,13 @@
 import UIKit
 import CoreData
 
+public let EquationsCountChanged = "EquationsCountChanged"
+
+class Equation: NSManagedObject {
+    @NSManaged var name : String
+    @NSManaged var expr : String
+}
+
 
 class EquationsManager: NSObject {
 
@@ -36,11 +43,13 @@ class EquationsManager: NSObject {
         equation.name = name
         equation.expr = expr
         saveContext()
+        NSNotificationCenter.defaultCenter().postNotificationName(EquationsCountChanged, object: nil)
         return equation
     }
     
     class func deleteEquation(equation : Equation){
         managedObjectContext.deleteObject(equation)
+        NSNotificationCenter.defaultCenter().postNotificationName(EquationsCountChanged, object: nil)
     }
     
     
