@@ -44,10 +44,12 @@ import UIKit
 class Parser: NSObject {
     let input : Lexer
     var lookahead : Token
+    var error : Bool
 
     init(input : Lexer) {
         self.input = input
-        lookahead = input.nextToken()
+        self.lookahead = input.nextToken()
+        self.error = false
         print(lookahead)
     }
     
@@ -64,10 +66,15 @@ class Parser: NSObject {
             consume()
             return node
         }else {
-            let ex : NSException = NSException(name: "GrammarError", reason: "expect \(type) but found \(lookahead.type)", userInfo: nil)
-            ex.raise()
-            return EquationNode(token: lookahead)
+            return unexpectedToken()
         }
+    }
+    func unexpectedToken() -> EquationNode {
+        error = true
+        return EquationNode(token: lookahead)
+    }
+    func variable() -> EquationNode {
+        return match(.variable)
     }
     func meta() -> EquationNode {
         switch lookahead.type {
@@ -76,8 +83,10 @@ class Parser: NSObject {
             let node = exp()
             match(.rightBracket)
             return node
-        default:
+        case .variable , .integer , .float :
             return match(lookahead.type)
+        default:
+            return unexpectedToken()
         }
     }
     func exp0() -> EquationNode  {
@@ -128,9 +137,7 @@ class Parser: NSObject {
                 return node
             }
         default:
-            let ex : NSException = NSException(name: "GrammarError", reason: "unexpected token type: \(lookahead.type)", userInfo: nil)
-            ex.raise()
-            return EquationNode(token: lookahead)
+            return unexpectedToken()
         }
     }
     func exp1() -> EquationNode {
@@ -169,17 +176,29 @@ class Parser: NSObject {
         }
         return node
     }
-    func parse() -> EquationTree {
-        let left = exp()
-        let root = match(.equal)
-        let right = exp()
-        
+    func parse() -> [EquationTree] {
+        var trees = [EquationTree]()
+        repeat{
+            let left = variable()
+            let root = match(.equal)
+            let right = exp()
+            root.leftChild = left
+            root.rightChild = right
+            left.father = root
+            right.father = root
+            trees.append(EquationTree(root: root))
+            match(.simicolon)
+        }while lookahead.type != .eof
         match(.eof)
-        
-        root.leftChild = left
-        root.rightChild = right
-        left.father = root
-        right.father = root
-        return EquationTree(root: root)
+        var results = [String]()
+        for tree in trees {
+            let r = tree.root.leftChild!.token.text
+            if results.contains(r) {
+                error = true
+            }else{
+                results.append(r)
+            }
+        }
+        return trees
     }
 }

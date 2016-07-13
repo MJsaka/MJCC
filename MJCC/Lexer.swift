@@ -12,11 +12,13 @@ class Lexer: NSObject {
     let input : String
     var p : String.Index
     var c : Character
+    var error : Bool
     
     required init(input : String) {
         self.input = input
         self.p = input.startIndex
         self.c = input[p]
+        self.error = false
     }
     func consume() {
         p = p.successor()
@@ -30,9 +32,11 @@ class Lexer: NSObject {
         if x == c {
             consume()
         }else{
-            let ex : NSException = NSException(name: "TokenError", reason: "expect \(x) but found \(c)", userInfo: nil)
-            ex.raise()
+            unexpectedToken()
         }
+    }
+    func unexpectedToken() {
+        error = true
     }
     func isLetter() -> Bool {
         return c >= "a" && c <= "z" || c >= "A" && c <= "Z"
@@ -58,16 +62,19 @@ class Lexer: NSObject {
                 ws()
                 continue
             case "(" :
-                consume()
+                match("(")
                 return Token(type: .leftBracket, text: "leftBracket")
             case ")" :
-                consume()
+                match(")")
                 return Token(type: .rightBracket, text: "rightBracket")
             case "," :
-                consume()
+                match(",")
                 return Token(type: .comma, text: "comma")
+            case ";" :
+                match(";")
+                return Token(type: .simicolon, text: "simicolon")
             case "=" :
-                consume()
+                match("=")
                 return Token(type: .equal, text: "equal")
             case "{" :
                 return variable()
@@ -78,25 +85,26 @@ class Lexer: NSObject {
             case "!" :
                 return factorial()
             case "^" :
-                consume()
+                match("^")
                 return Token(type: .power, text: "power")
             case "~" :
-                consume()
+                match("~")
                 return Token(type: .root, text: "root")
             case "*" :
-                consume()
+                match("*")
                 return Token(type: .multiply,text: "multiply")
             case "/" :
-                consume()
+                match("/")
                 return Token(type: .divide,text: "divide")
             case "+" :
-                consume()
+                match("+")
                 return Token(type: .plus,text: "plus")
             case "-" :
-                consume()
+                match("-")
                 return Token(type: .minus,text: "minus")
             default:
-                break
+                unexpectedToken()
+                return Token(type: .eof, text: "EOF")
             }
         }
         return Token(type: .eof, text: "EOF")
@@ -179,8 +187,7 @@ class Lexer: NSObject {
         case "e" , "PI" :
             type = .const
         default:
-            let ex : NSException = NSException(name: "TokeyError", reason: "unknown fuction \"\(text)\"", userInfo: nil)
-            ex.raise()
+            unexpectedToken()
         }
         
         return Token(type: type, text: text)

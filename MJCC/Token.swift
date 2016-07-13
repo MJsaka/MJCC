@@ -35,6 +35,7 @@ enum TokenType : UInt {
     case leftBracket //(
     case rightBracket //)
     case comma //,
+    case simicolon //;
     
     case variable //${NAME}
     case integer
