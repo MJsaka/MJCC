@@ -17,16 +17,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
 
-        if EquationsManager.equations().count == 0 {
-            for c in ["a" , "b" , "c" , "d" , "z" , "m" , "毕" , "松"] {
-                for i in 1 ... 5 {
-                    let name = "\(c)\(i)"
-                    let expr = "{x} = {\(c)\(i)} + \(i)"
-                    EquationsManager.insertEquation(name: name, expr: expr)
-                }
-            }
-        }
-        
+        let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
+        userDefaults.setObject("degree", forKey: "measurement")
+
         return true
     }
 
