@@ -50,13 +50,11 @@ class Parser: NSObject {
         self.input = input
         self.lookahead = input.nextToken()
         self.error = false
-        print(lookahead)
     }
     
     func consume() {
         if lookahead.type != .eof {
             lookahead = input.nextToken()
-            print(lookahead)
         }
     }
     
@@ -199,6 +197,71 @@ class Parser: NSObject {
                 results.append(r)
             }
         }
-        return trees
+        return reorderTrees(trees)
+    }
+    
+    func reorderTrees(trees : [EquationTree]) -> [EquationTree] {
+        var newTrees = [EquationTree]()
+        //rs辅助找到每棵树在新森林中的位置，与新森林同步变化
+        var rs = [String]()
+        for tree in trees {
+            newTrees.append(tree)
+            rs.append(tree.resultVariable())
+        }
+        //遍历原森林，找到每一棵树在新森林中的位置，并将原森林中的该树插入到新森林的合适位置
+        for tree in trees {
+            let vs = tree.variables()
+            let r = tree.resultVariable()
+            //该树在新森林中的原位置，备删除用
+            var index = 0
+            for i in 0 ..< rs.count {
+                if r == rs[i] {
+                    index = i
+                    break
+                }
+            }
+            //该树在新森林中的新位置，备插入用
+            //如果index树中的变量是i树的结果，则index树应该在i树之后计算
+            //即index应大于i，否则应将index树插入到最大的i树之后，即newIndex = i + 1
+            var newIndex = index
+            for v in vs {
+                for i in 0 ..< rs.count{
+                    if v == rs[i] && i > newIndex {
+                        newIndex = i
+                    }
+                }
+            }
+            if newIndex > index {
+                rs.insert(rs[index], atIndex: newIndex + 1)
+                newTrees.insert(newTrees[index], atIndex: newIndex + 1)
+                
+                rs.removeAtIndex(index)
+                newTrees.removeAtIndex(index)
+            }
+        }
+        //经过上述遍历之后，新森林应该已经正确排序，否则应该是有变量循环引用
+        //故再重复上述遍历，检查是否循环引用变量
+        for tree in trees {
+            let vs = tree.variables()
+            let r = tree.resultVariable()
+            //该树在新森林中的原位置
+            var index = 0
+            for i in 0 ..< rs.count {
+                if r == rs[i] {
+                    index = i
+                    break
+                }
+            }
+            //该树在新森林中的新位置，若比原位置大，说明有循环引用
+            for v in vs {
+                for i in 0 ..< rs.count{
+                    if v == rs[i] && i >= index {
+                        error = true
+                        return newTrees
+                    }
+                }
+            }
+        }
+        return newTrees
     }
 }
