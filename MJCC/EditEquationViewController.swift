@@ -23,6 +23,8 @@ class EditEquationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        self.tabBarController?.tabBar.hidden = true
+
         if let e = equation {
             nameField.text = e.name
             exprField.text = e.expr
@@ -39,13 +41,19 @@ class EditEquationViewController: UIViewController {
         }else{
             let lexer  = Lexer(input:expr)
             let parser  = Parser(input: lexer)
-            let _  = parser.parse()
+            let trees  = parser.parse()
             if lexer.error || parser.error {
                 let ac = UIAlertController(title: "错误", message: "公式语法错误", preferredStyle: .Alert)
                 ac.addAction(UIAlertAction(title: "确定", style: .Default, handler: nil))
                 self.presentViewController(ac, animated: true, completion: nil)
             }else{
-                sourceVC.finishEditEquation(name: name!, expr: expr!)
+                var newExpr : String = ""
+                for i in 0 ..< trees.count {
+                    let tree = trees[i]
+                    let e = tree.equationString()
+                    newExpr += e + ";\n"
+                }
+                sourceVC.finishEditEquation(name: name!, expr: newExpr)
                 self.navigationController?.popToRootViewControllerAnimated(true)
             }
         }

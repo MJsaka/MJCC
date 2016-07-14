@@ -8,7 +8,7 @@
 
 import UIKit
 
-class EquationsViewController: UITableViewController {
+class EquationsViewController: UITableViewController , FinishEditEquation{
     
     let collation : UILocalizedIndexedCollation = UILocalizedIndexedCollation.currentCollation()
     var sectionsArray : [Array<Equation>]!
@@ -22,16 +22,44 @@ class EquationsViewController: UITableViewController {
         (self.view as! UITableView).sectionIndexTrackingBackgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         
         // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
+        self.clearsSelectionOnViewWillAppear = true
+        
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-         self.navigationItem.leftBarButtonItem = self.editButtonItem()
+        self.navigationItem.leftBarButtonItem = self.editButtonItem()
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(onEquationNameChangedNotification), name: EquationNameChangedNotification, object: nil)
     }
-
+    
+    override func viewWillAppear(animated: Bool) {
+        self.tabBarController?.tabBar.hidden = false
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    func onEquationNameChangedNotification() {
+        tableView.reloadData()
+    }
+    
+    
+    func finishEditEquation(name name : String ,expr : String) {
+        let equation = EquationsManager.insertEquation(name: name, expr: expr)
+        let realSection = collation.sectionForObject(equation, collationStringSelector: Selector("name"))
+        sectionsArray[realSection].append(equation)
+        sectionsArray[realSection] = collation.sortedArrayFromArray(sectionsArray[realSection], collationStringSelector: Selector("name")) as! [Equation]
+        if sectionsArray[realSection].count == 1 {
+            self.updateSectionMap()
+            tableView.reloadData()
+        }else{
+            for i in 0 ..< sectionsMap.count{
+                if sectionsMap[i] == realSection {
+                    tableView.reloadSections(NSIndexSet(index: i), withRowAnimation: .Automatic)
+                }
+            }
+        }
+    }
+    
     
     // MARK: - Table view data source
 
@@ -100,13 +128,13 @@ class EquationsViewController: UITableViewController {
         return index
     }
     
-//    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-//        return 20
-//    }
-//    
-//    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-//        return 48
-//    }
+    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 36
+    }
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return 48
+    }
  
 
     
@@ -128,17 +156,20 @@ class EquationsViewController: UITableViewController {
             let equation = sectionsArray[sectionsMap[indexPath.section]].removeAtIndex(indexPath.row)
             EquationsManager.deleteEquation(equation)
             tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            if sectionsArray[sectionsMap[indexPath.section]].count == 0 {
+                self.updateSectionMap()
+                tableView.reloadData()
+                tableView.reloadSectionIndexTitles()
+            }
         }
     }
     
-
-    /*
+    
     // Override to support conditional rearranging of the table view.
     override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         // Return false if you do not want the item to be re-orderable.
-        return true
+        return false
     }
-    */
 
     
     // MARK: - Navigation
@@ -147,11 +178,16 @@ class EquationsViewController: UITableViewController {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
-        let indexPath = tableView.indexPathForSelectedRow
-        let section = indexPath!.section
-        let row = indexPath!.row
-        let vc = segue.destinationViewController as! CalViewController
-        vc.equation = sectionsArray[sectionsMap[section]][row]
+        if segue.identifier == "ShowEditView" {
+            let vc = segue.destinationViewController as! EditEquationViewController
+            vc.sourceVC = self
+        }else if segue.identifier == "ShowCalView"{
+            let indexPath = tableView.indexPathForSelectedRow
+            let section = indexPath!.section
+            let row = indexPath!.row
+            let vc = segue.destinationViewController as! CalViewController
+            vc.equation = sectionsArray[sectionsMap[section]][row]
+        }
     }
     
 
