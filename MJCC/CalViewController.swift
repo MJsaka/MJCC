@@ -7,48 +7,138 @@
 //
 
 import UIKit
+class Variable: NSObject {
+    var name :String!
+    var nameLabel: UILabel?
+    var inputField:UITextField?
+    var value : Double?
+}
 
-class CalViewController: UIViewController{
+class Result: NSObject {
+    var name :String!
+    var nameLabel: UILabel?
+    var resultLabel: UILabel?
+    var value : Double?
+}
+
+let EquationNameChangedNotification = "EquationNameChangedNotification"
+
+class CalViewController: UIViewController , FinishEditEquation{
 
     var equation : Equation!
-    var tree : EquationTree!
+    private var trees : [EquationTree]!
     
-    @IBOutlet weak var scrollView: UIScrollView!
-    var contentView : UIView!
-    var equationLabel : UILabel!
-    var variablesLabel : [UILabel]!
-    var variablesValueField : [UITextField]!
+    private var variables : [Variable]!
+    private var results : [Result]!
+    
+    @IBOutlet private weak var scrollView: UIScrollView!
+    
+    private var equationLabelHeight : CGFloat!
+    private var variablesViewHeight : CGFloat!
+    private var resultsViewHeight : CGFloat!
+    private var calButtonHeight : CGFloat!
+    private var contentViewHeight : CGFloat!
+    
+    private var contentView : UIView!
+    private var equationLabel : UILabel!
+    private var variablesView : UIView!
+    private var resultsView : UIView!
+    private var calButton : UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.title = equation.name
+        self.tabBarController?.tabBar.hidden = true
+        
         let input = equation.expr
         let lexer  = Lexer(input:input)
         let parser  = Parser(input: lexer)
-        tree  = parser.parse()
+        trees  = parser.parse()
+        
+        variables = [Variable]()
+        results = [Result]()
+        
+        generateVariablesAndResults()
+        
+        equationLabelHeight = CGFloat(100)
+        variablesViewHeight = CGFloat(50 * variables.count - 20)
+        resultsViewHeight = CGFloat(50 * results.count - 20)
+        calButtonHeight = CGFloat(60)
+        contentViewHeight = equationLabelHeight + variablesViewHeight + resultsViewHeight + calButtonHeight + 80
         
         generateContentView()
+        generateEquationLabel()
+        generateVariablesView()
+        generateResultsView()
+        generateCalButton()
+//        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(CalViewController.keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: nil)
+//    NSNotificationCenter.defaultCenter().addObserver(self,selector:#selector(CalViewController.keyboardWillHide(_:)),name:UIKeyboardWillHideNotification,object:nil)
+    }
+    
+//    func keyboardWillShow(notification : NSNotification)  {
+//        let userInfo = notification.userInfo
+//        let keyboardInfo : (AnyObject!) = userInfo.objectForKey(UIKeyboardFrameEndUserInfoKey)
+//        let keyboardRect:CGRect = keyboardInfo.CGRectValue() as CGRect
+//        let height = keyboardRect.size.height as Float
+//    }
+//    func keyboardWillHide(notification : NSNotification)  {
+//        
+//    }
+    
+    func generateVariablesAndResults() {
+        for i in 0 ..< trees.count {
+            let tree = trees[i]
+            let result = Result()
+            result.name = tree.resultVariable()
+            results.append(result)
+        }
+        
+        for i in 0 ..< trees.count {
+            let tree = trees[i]
+            let vs = tree.variables()
+            for v in vs {
+                if variables.contains({ v == $0.name})
+                {
+                    continue
+                }
+                if results.contains({ v == $0.name })
+                {
+                    continue
+                }
+                let variable = Variable()
+                variable.name = v
+                variables.append(variable)
+            }
+        }
     }
     
     func generateContentView() {
-        let variables = tree.variables()
-        contentView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 120 + 50 * CGFloat(variables.count) + 60))
+        
+        contentView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: contentViewHeight))
         contentView.userInteractionEnabled = true
         scrollView.addSubview(contentView)
-        scrollView.contentSize = CGSize(width: self.view.frame.width, height: 120 + 50 * CGFloat(variables.count) + 60)
+        scrollView.contentSize = CGSize(width: self.view.frame.width, height: contentViewHeight)
         
         contentView.translatesAutoresizingMaskIntoConstraints = false
         let contentViewConstrain1 = NSLayoutConstraint(item: contentView, attribute: .LeadingMargin, relatedBy: .Equal, toItem: self.view, attribute: .LeadingMargin, multiplier: 1.0, constant: 0)
         let contentViewConstrain2 = NSLayoutConstraint(item: contentView, attribute: .TrailingMargin, relatedBy: .Equal, toItem: self.view, attribute: .TrailingMargin, multiplier: 1.0, constant: 0)
         let contentViewConstrain3 = NSLayoutConstraint(item: contentView, attribute: .TopMargin, relatedBy: .Equal, toItem: self.view, attribute: .TopMargin, multiplier: 1.0, constant: 0)
-        let contentViewConstrain4 = NSLayoutConstraint(item: contentView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .Height, multiplier: 1.0, constant: 120 + 50 * CGFloat(variables.count) + 60)
+        let contentViewConstrain4 = NSLayoutConstraint(item: contentView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .Height, multiplier: 1.0, constant: contentViewHeight)
     
         self.view.addConstraints([contentViewConstrain1,contentViewConstrain2,contentViewConstrain3,contentViewConstrain4])
-        
-        equationLabel = UILabel(frame: CGRect(x: 20, y: 20, width: self.view.frame.width - 40, height: 80))
-        equationLabel.text = tree.equationString()
-        equationLabel.lineBreakMode = .ByTruncatingTail
+    }
+    
+    func generateEquationLabel() {
+        equationLabel = UILabel(frame: CGRect(x: 20, y: 20, width: self.view.frame.width - 40, height: equationLabelHeight))
+        var expr : String = ""
+        for i in 0 ..< trees.count {
+            let tree = trees[i]
+            let e = tree.equationString()
+            expr += e + ";\n"
+        }
+        equationLabel.text = expr
+        equationLabel.lineBreakMode = .ByTruncatingMiddle
         equationLabel.textAlignment = .Center
         equationLabel.numberOfLines = 0
         equationLabel.backgroundColor = UIColor.yellowColor()
@@ -56,67 +146,140 @@ class CalViewController: UIViewController{
         
         equationLabel.translatesAutoresizingMaskIntoConstraints = false
         let equationTextViewConstrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[equationLabel]-20-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["equationLabel":equationLabel])
-        let equationTextViewConstrains2 = NSLayoutConstraint.constraintsWithVisualFormat("V:|-20-[equationLabel(80)]", options: NSLayoutFormatOptions(), metrics: nil, views: ["equationLabel":equationLabel])
-        contentView.addConstraints(equationTextViewConstrains1)
-        contentView.addConstraints(equationTextViewConstrains2)
+        let equationTextViewConstrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:|-20-[equationLabel(%lf)]" , equationLabelHeight) , options: NSLayoutFormatOptions(), metrics: nil, views: ["equationLabel":equationLabel])
+        contentView.addConstraints(equationTextViewConstrains1 + equationTextViewConstrains2)
+    }
+    
+    func generateVariablesView() {
+        variablesView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: variablesViewHeight))
+//        variablesView.backgroundColor = UIColor.brownColor()
+        contentView.addSubview(variablesView)
+        variablesView.translatesAutoresizingMaskIntoConstraints = false
+        let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|[variablesView]|", options: .AlignAllCenterY, metrics: nil, views: ["variablesView":variablesView])
+        let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[equationLabel]-20-[variablesView(%lf)]",variablesViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["equationLabel":equationLabel,"variablesView":variablesView])
+        contentView.addConstraints(constrains1 + constrains2)
         
-        variablesLabel = [UILabel]()
-        variablesValueField = [UITextField]()
         for i in 0 ..< variables.count{
-            let label = UILabel(frame: CGRect(x: 20, y: 120 + 50 * CGFloat(i), width: 100, height: 30))
-            label.text = variables[i]
+            let variable = variables[i]
+            let name = variable.name
+            let label = UILabel(frame: CGRect(x: 20, y: 50 * CGFloat(i), width: 100, height: 30))
+            label.text = name
             label.backgroundColor = UIColor.orangeColor()
             label.textAlignment = .Center
-            variablesLabel.append(label)
-            contentView.addSubview(label)
+            variablesView.addSubview(label)
+            variable.nameLabel = label
             
-            let textField = UITextField(frame: CGRect(x: 140, y: 120 + 50 * CGFloat(i), width: 200, height: 30))
+            let textField = UITextField(frame: CGRect(x: 140, y: 50 * CGFloat(i), width: 200, height: 30))
             textField.backgroundColor = UIColor.whiteColor()
             textField.borderStyle = .RoundedRect
             textField.keyboardType = .DecimalPad
-            contentView.addSubview(textField)
-            variablesValueField.append(textField)
+            textField.text = ""
+            variablesView.addSubview(textField)
+            variable.inputField = textField
             
             label.translatesAutoresizingMaskIntoConstraints = false
             textField.translatesAutoresizingMaskIntoConstraints = false
             let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[label(100)]-20-[textField]-20-|", options: .AlignAllCenterY, metrics: nil, views: ["label":label,"textField":textField])
-            let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[label(30)]" , 120 + 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label])
-            let constrains3 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[textField(30)]" , 120 + 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["textField":textField])
-            contentView.addConstraints(constrains1)
-            contentView.addConstraints(constrains2)
-            contentView.addConstraints(constrains3)
+            let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[label(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label])
+            let constrains3 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[textField(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["textField":textField])
+            variablesView.addConstraints(constrains1 + constrains2 + constrains3)
         }
-        let button : UIButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        contentView.addSubview(button)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = UIColor.blueColor()
-        button.setTitle("计算", forState: .Normal)
-        button.addTarget(self, action: #selector(CalViewController.calculate(_:)), forControlEvents: .TouchUpInside)
-
-        let buttonConstrain1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[button]-20-|", options: .AlignAllCenterX, metrics: nil, views: ["button" : button])
-        let buttonConstrain2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[button(40)]" , 120 + 50 * CGFloat(variablesLabel.count)), options: .AlignAllCenterX, metrics: nil, views: ["button" : button])
-        contentView.addConstraints(buttonConstrain1)
-        contentView.addConstraints(buttonConstrain2)
     }
     
+    func generateResultsView() {
+        resultsView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: resultsViewHeight))
+//        resultsView.backgroundColor = UIColor.brownColor()
+        contentView.addSubview(resultsView)
+        resultsView.translatesAutoresizingMaskIntoConstraints = false
+        let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|[resultsView]|", options: .AlignAllCenterY, metrics: nil, views: ["resultsView":resultsView])
+        let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[variablesView]-20-[resultsView(%lf)]" , resultsViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["resultsView":resultsView,"variablesView":variablesView])
+        contentView.addConstraints(constrains1 + constrains2)
+        
+        for i in 0 ..< results.count{
+            let result = results[i]
+            let name = result.name
+            let label = UILabel(frame: CGRect(x: 20, y: 50 * CGFloat(i), width: 100, height: 30))
+            label.text = name
+            label.backgroundColor = UIColor.greenColor()
+            label.textAlignment = .Center
+            resultsView.addSubview(label)
+            result.nameLabel = label
+            
+            let resultLabel = UILabel(frame: CGRect(x: 20, y: 50 * CGFloat(i), width: 200, height: 30))
+            resultLabel.backgroundColor = UIColor.greenColor()
+            resultLabel.textAlignment = .Center
+            resultsView.addSubview(resultLabel)
+            result.resultLabel = resultLabel
+            
+            label.translatesAutoresizingMaskIntoConstraints = false
+            resultLabel.translatesAutoresizingMaskIntoConstraints = false
+            let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[label(100)]-20-[resultLabel]-20-|", options: .AlignAllCenterY, metrics: nil, views: ["label":label,"resultLabel":resultLabel])
+            let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%lf-[label(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label])
+            let constrains3 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%lf-[resultLabel(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["resultLabel":resultLabel])
+            resultsView.addConstraints(constrains1 + constrains2 + constrains3)
+        }
+    }
+    
+    func generateCalButton() {
+        calButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: calButtonHeight))
+        contentView.addSubview(calButton)
+        calButton.translatesAutoresizingMaskIntoConstraints = false
+        calButton.backgroundColor = UIColor.blueColor()
+        calButton.setTitle("计算", forState: .Normal)
+        calButton.addTarget(self, action: #selector(CalViewController.calculate(_:)), forControlEvents: .TouchUpInside)
+        
+        let buttonConstrain1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[calButton]-20-|", options: .AlignAllCenterX, metrics: nil, views: ["calButton" : calButton])
+        let buttonConstrain2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[resultsView]-20-[calButton(%lf)]" , calButtonHeight), options: .AlignAllCenterX, metrics: nil, views: ["resultsView":resultsView,"calButton" : calButton])
+        contentView.addConstraints(buttonConstrain1 + buttonConstrain2)
+    }
+    
+    
     @IBAction func calculate(sender: UIBarButtonItem) {
-        var index : Int = -1
-        for i in  0 ..< variablesValueField.count {
-            let variable = variablesLabel[i].text
-            if let valueText = variablesValueField[i].text {
-                if let value = Double(valueText){
-                    tree.variablesValue[variable!] = value
-                }else{
-                    index = i
+        //判断是否所有变量都已经赋值
+        for i in 0 ..< variables.count {
+            let variable = variables[i]
+            let name = variable.name
+            if let v = Double(variable.inputField!.text!) {
+                variable.value = v
+            }else{
+                let ac = UIAlertController(title: "变量值错误", message: "变量\(name)的输入值有误，请重新输入", preferredStyle: .Alert)
+                ac.addAction(UIAlertAction(title: "确定", style: .Default, handler: nil))
+                self.presentViewController(ac, animated: true, completion: nil)
+                break
+            }
+        }
+        for i in 0 ..< trees.count {
+            let tree = trees[i]
+            
+            for variable in variables {
+                tree.variablesValue[variable.name] = variable.value!
+            }
+            for result in results {
+                if let value = result.value {
+                    tree.variablesValue[result.name] = value
+                }
+            }
+            
+            let resultVariable = tree.resultVariable()
+            let result = tree.result()
+            for i in 0 ..< results.count {
+                if results[i].name == resultVariable {
+                    results[i].value = result
+                    results[i].resultLabel!.text = "\(result)"
+                    break
                 }
             }
         }
-        if index != -1 {
-            let v = tree.calculateVariable(variablesLabel[index].text!)
-            variablesValueField[index].text = "\(v)"
-        }else{
-            let ex : NSException = NSException(name: "VariableValue", reason: "please leave one variable not assigned", userInfo: nil)
-            ex.raise()
+    }
+    
+    
+    func finishEditEquation(name name : String ,expr : String) {
+        if equation.name != name {
+            equation.name = name
+            NSNotificationCenter.defaultCenter().postNotificationName(EquationNameChangedNotification, object: self, userInfo: nil)
+        }
+        if equation.expr != expr {
+            equation.expr = expr
         }
     }
 
@@ -124,14 +287,16 @@ class CalViewController: UIViewController{
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+   
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        scrollView.contentSize = CGSize(width: self.view.frame.width, height: 120 + 50 * CGFloat(variablesLabel.count) + 60)
+        scrollView.contentSize = CGSize(width: size.width, height:contentViewHeight)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "ShowTreeView" {
-            let treeViewController = segue.destinationViewController as! TreeViewController
-            treeViewController.tree = self.tree
+        if segue.identifier == "ShowEditView" {
+            let vc = segue.destinationViewController as! EditEquationViewController
+            vc.sourceVC = self
+            vc.equation = equation
         }
     }
 
