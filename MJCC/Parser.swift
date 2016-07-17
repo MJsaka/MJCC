@@ -49,12 +49,14 @@ class Parser: NSObject {
     init(input : Lexer) {
         self.input = input
         self.lookahead = input.nextToken()
+//        print("\(lookahead.type) : \(lookahead.text)")
         self.error = false
     }
     
     func consume() {
         if lookahead.type != .eof {
             lookahead = input.nextToken()
+//            print("\(lookahead.type) : \(lookahead.text)")
         }
     }
     
@@ -81,7 +83,7 @@ class Parser: NSObject {
             let node = exp()
             match(.rightBracket)
             return node
-        case .variable , .integer , .float :
+        case .variable , .integer , .float , .const:
             return match(lookahead.type)
         default:
             return unexpectedToken()
