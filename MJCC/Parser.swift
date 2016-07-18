@@ -82,12 +82,14 @@ class Parser: NSObject {
                 error = e
                 return (node , error)
             }
+            
             let n = exp()
             if let e = n.error {
                 error = e
                 return (node , error)
             }
             node = n.node!
+            
             let r = match(.rightBracket)
             if let e = r.error{
                 error = e
@@ -111,12 +113,15 @@ class Parser: NSObject {
                 return (node , error)
             }
             node = n.node!
+            
             let l = meta()
             if let e = l.error {
                 error = e
                 return (node , error)
             }
-            node!.leftChild = l.node!
+            let left = l.node!
+            
+            node!.leftChild = left
             node!.leftChild?.father = node
             return (node , error)
         case .logarithm2 :
@@ -126,30 +131,41 @@ class Parser: NSObject {
                 return (node , error)
             }
             node = n.node!
+            
             let lb = match(.leftBracket)
             if let e = lb.error {
                 error = e
                 return (node , error)
             }
+            
             let l = exp()
             if let e = l.error {
                 error = e
                 return (node , error)
             }
-            node!.leftChild = l.node
+            let left = l.node!
+            
             let comma = match(.comma)
             if let e = comma.error {
                 error = e
                 return (node , error)
             }
+            
             let r = exp()
             if let e = r.error {
                 error = e
                 return (node , error)
             }
-            node!.rightChild = r.node
-            match(.rightBracket)
+            let right = r.node!
             
+            let rb = match(.rightBracket)
+            if let e = rb.error {
+                error = e
+                return (node , error)
+            }
+            
+            node!.leftChild = left
+            node!.rightChild = right
             node!.leftChild?.father = node
             node!.leftChild?.father = node
             return (node , error)
@@ -160,6 +176,7 @@ class Parser: NSObject {
                 return (node , error)
             }
             node = n.node!
+            
             if lookahead.type == .factorial {
                 let f = match(.factorial)
                 if let e = f.error {
@@ -167,6 +184,7 @@ class Parser: NSObject {
                     return (node , error)
                 }
                 let father = f.node!
+                
                 father.leftChild = node
                 father.leftChild?.father = father
                 node = father
@@ -178,21 +196,22 @@ class Parser: NSObject {
                     return (node , error)
                 }
                 let father = f.node!
-                father.leftChild = node
+                
                 let r = meta()
                 if let e = r.error {
                     error = e
                     return (node , error)
                 }
                 let right = r.node!
+                
+                father.leftChild = node
                 father.leftChild?.father = father
                 father.rightChild = right
                 father.rightChild?.father = father
                 node = father
                 return (node , error)
-            }else {
-                return (node , error)
             }
+            return (node , error)
         case .float , .variable , .const, .leftBracket:
             let n = meta()
             if let e = n.error {
@@ -200,6 +219,7 @@ class Parser: NSObject {
                 return (node , error)
             }
             node = n.node!
+            
             if lookahead.type == .power || lookahead.type == .root {
                 let f = match(lookahead.type)
                 if let e = f.error {
@@ -207,21 +227,22 @@ class Parser: NSObject {
                     return (node , error)
                 }
                 let father = f.node!
-                father.leftChild = node
+                
                 let r = meta()
                 if let e = r.error {
                     error = e
                     return (node , error)
                 }
                 let right = r.node!
+                
+                father.leftChild = node
                 father.leftChild?.father = father
                 father.rightChild = right
                 father.rightChild?.father = father
                 node = father
                 return (node , error)
-            }else {
-                return (node , error)
             }
+            return (node , error)
         default:
             error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(lookahead.text)'")
             return (node , error)
@@ -235,6 +256,7 @@ class Parser: NSObject {
             return (node , error)
         }
         node = exp.node!
+        
         while lookahead.type == .multiply || lookahead.type == .divide {
             let f = match(lookahead.type)
             if let e = f.error {
@@ -242,13 +264,15 @@ class Parser: NSObject {
                 return (node , error)
             }
             let father = f.node!
-            father.leftChild = node
+            
             let r = exp0()
             if let e = r.error {
                 error = e
                 return (node , error)
             }
             let right = r.node!
+            
+            father.leftChild = node
             father.rightChild = right
             father.leftChild?.father = father
             father.rightChild?.father = father
@@ -265,9 +289,6 @@ class Parser: NSObject {
                 return (node , error)
             }
             node = n.node!
-            let t = Token(type: .float, text: "0")
-            node!.leftChild = EquationNode(token: t)
-            node!.leftChild?.father = node
             
             let r = exp1()
             if let e = r.error {
@@ -275,6 +296,10 @@ class Parser: NSObject {
                 return (node , error)
             }
             let right = r.node!
+            
+            let t = Token(type: .float, text: "0")
+            node!.leftChild = EquationNode(token: t)
+            node!.leftChild?.father = node
             node!.rightChild = right
             node!.rightChild!.father = node
         }else{
@@ -293,15 +318,16 @@ class Parser: NSObject {
                 return (node , error)
             }
             let father = f.node!
-            father.leftChild = node
+            
             let r = exp1()
             if let e = r.error {
                 error = e
                 return (node , error)
             }
             let right = r.node!
-            father.rightChild = right
             
+            father.leftChild = node
+            father.rightChild = right
             father.leftChild!.father = father
             father.rightChild!.father = father
             node = father
@@ -318,26 +344,32 @@ class Parser: NSObject {
             self.lookahead = t.token!
         }
         repeat{
-            let left = variable()
-            if let e = left.error {
+            let l = variable()
+            if let e = l.error {
                 error = e
                 return (trees , error)
             }
-            let root = match(.equal)
-            if let e = root.error {
+            let left = l.node!
+            
+            let t = match(.equal)
+            if let e = t.error {
                 error = e
                 return (trees , error)
             }
-            let right = exp()
-            if let e = right.error {
+            let root = t.node!
+            
+            let r = exp()
+            if let e = r.error {
                 error = e
                 return (trees , error)
             }
-            root.node!.leftChild = left.node!
-            root.node!.rightChild = right.node!
-            left.node!.father = root.node!
-            right.node!.father = root.node!
-            trees.append(EquationTree(root: root.node!))
+            let right = r.node!
+            
+            root.leftChild = left
+            root.rightChild = right
+            left.father = root
+            right.father = root
+            trees.append(EquationTree(root: root))
             
             let simicolon = match(.simicolon)
             if let e = simicolon.error {
