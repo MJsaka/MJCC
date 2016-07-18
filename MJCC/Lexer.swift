@@ -12,13 +12,11 @@ class Lexer: NSObject {
     let input : String
     var p : String.Index
     var c : Character
-    var error : Bool
     
     required init(input : String) {
         self.input = input
         self.p = input.startIndex
         self.c = input[p]
-        self.error = false
     }
     func consume() {
         p = p.successor()
@@ -28,15 +26,13 @@ class Lexer: NSObject {
             c = "\0"
         }
     }
-    func match(x : Character) {
+    func match(x : Character) -> GrammarError? {
         if x == c {
             consume()
+            return nil
         }else{
-            unexpectedToken()
+            return GrammarError(type: .unExpectedCharacter, info: "expected '\(x)' but found '\(c)'")
         }
-    }
-    func unexpectedToken() {
-        error = true
     }
     func isLetter() -> Bool {
         return c >= "a" && c <= "z" || c >= "A" && c <= "Z"
@@ -54,28 +50,14 @@ class Lexer: NSObject {
         return c == "."
     }
     
-    func nextToken() -> Token {
+    func nextToken() -> (token :Token? , error : GrammarError?) {
+        var token :Token? , error : GrammarError?
         while p < input.endIndex
         {
             switch c {
             case " " , "\t" , "\n" , "\r":
                 ws()
                 continue
-            case "(" :
-                match("(")
-                return Token(type: .leftBracket, text: "leftBracket")
-            case ")" :
-                match(")")
-                return Token(type: .rightBracket, text: "rightBracket")
-            case "," :
-                match(",")
-                return Token(type: .comma, text: "comma")
-            case ";" :
-                match(";")
-                return Token(type: .simicolon, text: "simicolon")
-            case "=" :
-                match("=")
-                return Token(type: .equal, text: "equal")
             case "{" :
                 return variable()
             case "0" ... "9" :
@@ -84,30 +66,68 @@ class Lexer: NSObject {
                 return functionOrConst()
             case "!" :
                 return factorial()
+            case "(" :
+                error = match("(")
+                if error == nil {
+                    token = Token(type: .leftBracket, text: "leftBracket")
+                }
+            case ")" :
+                error = match(")")
+                if error == nil{
+                    token = Token(type: .leftBracket, text: "rightBracket")
+                }
+            case "," :
+                error = match(",")
+                if error == nil {
+                    token = Token(type: .comma, text: "comma")
+                }
+            case ";" :
+                error = match(";")
+                if error == nil {
+                    token = Token(type: .simicolon, text: "simicolon")
+                }
+            case "=" :
+                error = match("=")
+                if error == nil {
+                    token = Token(type: .equal, text: "equal")
+                }
             case "^" :
-                match("^")
-                return Token(type: .power, text: "power")
+                error = match("^")
+                if error == nil {
+                    token = Token(type: .power, text: "power")
+                }
             case "~" :
-                match("~")
-                return Token(type: .root, text: "root")
+                error = match("~")
+                if error == nil {
+                    token = Token(type: .root, text: "root")
+                }
             case "*" :
-                match("*")
-                return Token(type: .multiply,text: "multiply")
+                error = match("*")
+                if error == nil {
+                    token = Token(type: .multiply,text: "multiply")
+                }
             case "/" :
-                match("/")
-                return Token(type: .divide,text: "divide")
+                error = match("/")
+                if error == nil {
+                    token = Token(type: .divide,text: "divide")
+                }
             case "+" :
-                match("+")
-                return Token(type: .plus,text: "plus")
+                error = match("+")
+                if error == nil {
+                    token = Token(type: .plus,text: "plus")
+                }
             case "-" :
-                match("-")
-                return Token(type: .minus,text: "minus")
+                error = match("-")
+                if error == nil {
+                    token = Token(type: .minus,text: "minus")
+                }
             default:
-                unexpectedToken()
-                return Token(type: .eof, text: "EOF")
+                error = GrammarError(type: .unExpectedCharacter, info: "unexpected character '\(c)'")
             }
-        }
-        return Token(type: .eof, text: "EOF")
+            return (token , error)
+        }//while
+        token = Token(type: .eof, text: "eof")
+        return (token , error)
     }
     
     func ws() {
@@ -115,26 +135,33 @@ class Lexer: NSObject {
             consume()
         }
     }
-    func factorial() -> Token {
-        var type : TokenType = .factorial
+    func factorial() ->  (token :Token? , error : GrammarError?)  {
+        var token : Token? , error : GrammarError?
+        let type : TokenType = .factorial
         var text : String = "factorial"
-        match("!")
+        //第一个'!'
+        consume()
+        //第二个'!'
         if c == "!" {
-            type = .doubleFactorial
             text = "doubleFactorial"
-            match("!")
+            consume()
         }
-        return Token(type: type, text: text)
+        token = Token(type: type, text: text)
+        return (token , error)
     }
     
-    func number() -> Token {
+    func number() ->  (token :Token? , error : GrammarError?)  {
+        var token : Token? , error : GrammarError?
         var text : String = ""
         var type : TokenType = .integer
         if isZero() {
+            consume()
             type = .float
-            match("0")
             text += "0"
-            match(".")
+            error = match(".")
+            if error != nil {
+                return (token , error)
+            }
             text += "."
             while isNumber() {
                 text.append(c)
@@ -146,8 +173,8 @@ class Lexer: NSObject {
                 consume()
             }
             if isDot() {
+                consume()
                 type = .float
-                match(".")
                 text += "."
                 while isNumber() {
                     text.append(c)
@@ -155,23 +182,32 @@ class Lexer: NSObject {
                 }
             }
         }
-        return Token(type: type, text: text)
+        token = Token(type: type, text: text)
+        return (token , error)
     }
     
-    func variable() -> Token {
+    func variable() ->  (token :Token? , error : GrammarError?)  {
+        var token :Token? , error : GrammarError?
         var text : String = ""
-        match("{")
-        while c != "}"{
+        error = match("{")
+        if error != nil {
+            return (token , error)
+        }
+        while p < input.endIndex && c != "}"{
             text.append(c)
             consume()
         }
-        match("}")
-        return Token(type: .variable, text: text)
+        error = match("}")
+        if error != nil {
+            return (token , error)
+        }
+        token = Token(type: .variable, text: text)
+        return (token , error)
     }
-    func functionOrConst() -> Token {
-        var text : String = String(c)
+    func functionOrConst() ->  (token :Token? , error : GrammarError?)  {
+        var token :Token? , error : GrammarError?
+        var text : String = ""
         var type : TokenType = .trigonometric
-        consume()
         
         while isLetter() {
             text.append(c)
@@ -187,10 +223,11 @@ class Lexer: NSObject {
         case "e" , "PI" :
             type = .const
         default:
-            unexpectedToken()
+            error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(text)'")
+            return (token , error)
         }
-        
-        return Token(type: type, text: text)
+        token = Token(type: type, text: text)
+        return (token , error)
     }
     
 }

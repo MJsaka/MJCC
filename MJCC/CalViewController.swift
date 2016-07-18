@@ -53,8 +53,8 @@ class CalViewController: UIViewController , FinishEditEquation{
         
         let input = equation.expr
         let lexer  = Lexer(input:input)
-        let parser  = Parser(input: lexer)
-        trees  = parser.parse()
+        let parser  = Parser(lexer: lexer)
+        trees  = parser.parse().trees
         
         variables = [Variable]()
         results = [Result]()

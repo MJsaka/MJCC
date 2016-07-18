@@ -40,13 +40,14 @@ class EditEquationViewController: UIViewController {
             self.presentViewController(ac, animated: true, completion: nil)
         }else{
             let lexer  = Lexer(input:expr)
-            let parser  = Parser(input: lexer)
-            let trees  = parser.parse()
-            if lexer.error || parser.error {
-                let ac = UIAlertController(title: "错误", message: "公式语法错误", preferredStyle: .Alert)
+            let parser  = Parser(lexer: lexer)
+            let t = parser.parse()
+            if let e = t.error {
+                let ac = UIAlertController(title: "错误", message: "\(e.info)", preferredStyle: .Alert)
                 ac.addAction(UIAlertAction(title: "确定", style: .Default, handler: nil))
                 self.presentViewController(ac, animated: true, completion: nil)
             }else{
+                let trees = t.trees
                 var newExpr : String = ""
                 for i in 0 ..< trees.count {
                     let tree = trees[i]

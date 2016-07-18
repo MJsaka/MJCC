@@ -42,159 +42,270 @@
 import UIKit
 
 class Parser: NSObject {
-    let input : Lexer
-    var lookahead : Token
-    var error : Bool
+    let lexer : Lexer
+    var lookahead : Token!
 
-    init(input : Lexer) {
-        self.input = input
-        self.lookahead = input.nextToken()
+    init(lexer : Lexer) {
+        self.lexer = lexer
 //        print("\(lookahead.type) : \(lookahead.text)")
-        self.error = false
     }
     
-    func consume() {
-        if lookahead.type != .eof {
-            lookahead = input.nextToken()
-//            print("\(lookahead.type) : \(lookahead.text)")
+    func consume() -> GrammarError?{
+        let t = lexer.nextToken()
+        if let error = t.error {
+            return error
+        }else{
+            lookahead = t.token!
+            return nil
         }
     }
     
-    func match(type : TokenType) -> EquationNode{
+    func match(type : TokenType) -> (node : EquationNode? , error : GrammarError?){
+        var node : EquationNode? , error : GrammarError?
         if lookahead.type == type {
-            let node = EquationNode(token: lookahead)
-            consume()
-            return node
-        }else {
-            return unexpectedToken()
+            node = EquationNode(token: lookahead)
+            error = consume()
+            return (node , error)
+        }else{
+            error = GrammarError(type: .unExpectedToken, info: "expected '\(type)' but found '\(lookahead.type)'")
+            return (node , error)
         }
     }
-    func unexpectedToken() -> EquationNode {
-        error = true
-        return EquationNode(token: lookahead)
-    }
-    func variable() -> EquationNode {
+    func variable() -> (node : EquationNode? , error : GrammarError?) {
         return match(.variable)
     }
-    func meta() -> EquationNode {
+    func meta() -> (node : EquationNode? , error : GrammarError?) {
+        var node : EquationNode? , error : GrammarError?
         switch lookahead.type {
         case .leftBracket :
-            match(.leftBracket)
-            let node = exp()
-            match(.rightBracket)
-            return node
+            let l = match(.leftBracket)
+            if let e = l.error{
+                error = e
+                return (node , error)
+            }
+            let n = exp()
+            if let e = n.error {
+                error = e
+                return (node , error)
+            }
+            node = n.node!
+            let r = match(.rightBracket)
+            if let e = r.error{
+                error = e
+                return (node , error)
+            }
+            return (node , error)
         case .variable , .integer , .float , .const:
             return match(lookahead.type)
         default:
-            return unexpectedToken()
+            error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(lookahead.text)'")
+            return (node , error)
         }
     }
-    func exp0() -> EquationNode  {
+    func exp0() -> (node : EquationNode? , error : GrammarError?)  {
+        var node : EquationNode? , error : GrammarError?
         switch lookahead.type {
         case .trigonometric , .logarithm1:
-            let node = match(lookahead.type)
-            node.leftChild = meta()
-            node.leftChild?.father = node
-            return node
+            node = match(lookahead.type).node!
+            let l = meta()
+            if let e = l.error {
+                error = e
+                return (node , error)
+            }
+            node!.leftChild = l.node!
+            node!.leftChild?.father = node
+            return (node , error)
         case .logarithm2 :
-            let node = match(.logarithm2)
-            match(.leftBracket)
-            node.leftChild = exp()
-            match(.comma)
-            node.rightChild = exp()
+            node = match(.logarithm2).node!
+            let lb = match(.leftBracket)
+            if let e = lb.error {
+                error = e
+                return (node , error)
+            }
+            let l = exp()
+            if let e = l.error {
+                error = e
+                return (node , error)
+            }
+            node!.leftChild = l.node
+            let comma = match(.comma)
+            if let e = comma.error {
+                error = e
+                return (node , error)
+            }
+            let r = exp()
+            if let e = r.error {
+                error = e
+                return (node , error)
+            }
+            node!.rightChild = r.node
             match(.rightBracket)
             
-            node.leftChild?.father = node
-            node.leftChild?.father = node
-            return node
+            node!.leftChild?.father = node
+            node!.leftChild?.father = node
+            return (node , error)
         case .integer :
-            let node = meta()
-            if lookahead.type == .factorial || lookahead.type == .doubleFactorial  {
-                let father = match(lookahead.type)
+            node = meta().node!
+            if lookahead.type == .factorial {
+                let father = match(.factorial).node!
                 father.leftChild = node
                 father.leftChild?.father = father
-                return father
+                node = father
+                return (node , error)
             }else if lookahead.type == .power || lookahead.type == .root {
-                let father = match(lookahead.type)
+                let father = match(lookahead.type).node!
                 father.leftChild = node
-                father.rightChild = meta()
+                let r = meta()
+                if let e = r.error {
+                    error = e
+                    return (node , error)
+                }
                 father.leftChild?.father = father
                 father.rightChild?.father = father
-                return father
+                node = father
+                return (node , error)
             }else {
-                return node
+                return (node , error)
             }
         case .float , .variable , .const, .leftBracket:
-            let node = meta()
+            node = meta().node!
             if lookahead.type == .power || lookahead.type == .root {
-                let father = match(lookahead.type)
+                let father = match(lookahead.type).node!
                 father.leftChild = node
-                father.rightChild = meta()
+                let r = meta()
+                if let e = r.error {
+                    error = e
+                    return (node , error)
+                }
                 father.leftChild?.father = father
                 father.rightChild?.father = father
-                return father
+                node = father
+                return (node , error)
             }else {
-                return node
+                return (node , error)
             }
         default:
-            return unexpectedToken()
+            error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(lookahead.text)'")
+            return (node , error)
         }
     }
-    func exp1() -> EquationNode {
-        var node = exp0()
+    func exp1() -> (node : EquationNode? , error : GrammarError?) {
+        var node : EquationNode? , error : GrammarError?
+        let exp = exp0()
+        if let e = exp.error {
+            error = e
+            return (node , error)
+        }
+        node = exp.node!
         while lookahead.type == .multiply || lookahead.type == .divide {
-            let father = match(lookahead.type)
+            let father = match(lookahead.type).node!
             father.leftChild = node
-            father.rightChild = exp0()
+            let r = exp0()
+            if let e = r.error {
+                error = e
+                return (node , error)
+            }
+            let right = r.node!
+            father.rightChild = right
             father.leftChild?.father = father
             father.rightChild?.father = father
             node = father
         }
-        return node
+        return (node , error)
     }
-    func exp() -> EquationNode {
-        var node : EquationNode
+    func exp() -> (node : EquationNode? , error : GrammarError?) {
+        var node : EquationNode? , error : GrammarError?
         if lookahead.text == "minus" {
-            node = match(.minus)
+            node = match(.minus).node!
             let t = Token(type: .float, text: "0")
-            node.leftChild = EquationNode(token: t)
-            node.leftChild?.father = node
-            node.rightChild = exp1()
-            node.rightChild?.father = node
+            node!.leftChild = EquationNode(token: t)
+            node!.leftChild?.father = node
+            
+            let r = exp1()
+            if let e = r.error {
+                error = e
+                return (node , error)
+            }
+            let right = r.node!
+            node!.rightChild = right
+            node!.rightChild!.father = node
         }else{
-            node = exp1()
+            let exp = exp1()
+            if let e = exp.error {
+                error = e
+                return (node , error)
+            }else{
+                node = exp.node!
+            }
         }
         while lookahead.type == .plus || lookahead.type == .minus {
-            let father = match(lookahead.type)
-            
+            let f = match(lookahead.type)
+            if let e = f.error {
+                error = e
+                return (node , error)
+            }
+            let father = f.node!
             father.leftChild = node
-            father.rightChild = exp1()
+            let r = exp1()
+            if let e = r.error {
+                error = e
+                return (node , error)
+            }
+            let right = r.node!
+            father.rightChild = right
             
-            father.leftChild?.father = father
-            father.rightChild?.father = father
+            father.leftChild!.father = father
+            father.rightChild!.father = father
             node = father
         }
-        return node
+        return (node , error)
     }
-    func parse() -> [EquationTree] {
-        var trees = [EquationTree]()
+    func parse() -> (trees : [EquationTree] , error : GrammarError?) {
+        var trees = [EquationTree]() , error : GrammarError?
+        let t = lexer.nextToken()
+        if let e = t.error {
+            error = e
+            return (trees , error)
+        }else{
+            self.lookahead = t.token!
+        }
         repeat{
             let left = variable()
+            if let e = left.error {
+                error = e
+                return (trees , error)
+            }
             let root = match(.equal)
+            if let e = root.error {
+                error = e
+                return (trees , error)
+            }
             let right = exp()
-            root.leftChild = left
-            root.rightChild = right
-            left.father = root
-            right.father = root
-            trees.append(EquationTree(root: root))
-            match(.simicolon)
+            if let e = right.error {
+                error = e
+                return (trees , error)
+            }
+            root.node!.leftChild = left.node!
+            root.node!.rightChild = right.node!
+            left.node!.father = root.node!
+            right.node!.father = root.node!
+            trees.append(EquationTree(root: root.node!))
+            
+            let simicolon = match(.simicolon)
+            if let e = simicolon.error {
+                error = e
+                return (trees , error)
+            }
         }while lookahead.type != .eof
+        
         match(.eof)
+        
         var results = [String]()
         for tree in trees {
             let r = tree.root.leftChild!.token.text
             if results.contains(r) {
-                error = true
+                error = GrammarError(type: .redefinedResultVariable, info: "redefined result variable '\(r)'")
+                return (trees , error)
             }else{
                 results.append(r)
             }
@@ -202,8 +313,9 @@ class Parser: NSObject {
         return reorderTrees(trees)
     }
     
-    func reorderTrees(trees : [EquationTree]) -> [EquationTree] {
-        var newTrees = [EquationTree]()
+    func reorderTrees(trees : [EquationTree]) -> (trees : [EquationTree] , error : GrammarError?) {
+
+        var newTrees = [EquationTree]() , error : GrammarError?
         //rs辅助找到每棵树在新森林中的位置，与新森林同步变化
         var rs = [String]()
         for tree in trees {
@@ -258,12 +370,12 @@ class Parser: NSObject {
             for v in vs {
                 for i in 0 ..< rs.count{
                     if v == rs[i] && i >= index {
-                        error = true
-                        return newTrees
+                        error = GrammarError(type: .cyclicallyReferencedVariable, info: "variable '\(v)' cyclical referenced")
+                        return (newTrees , error)
                     }
                 }
             }
         }
-        return newTrees
+        return (newTrees , error)
     }
 }

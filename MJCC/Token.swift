@@ -49,8 +49,7 @@ enum TokenType : UInt {
     case logarithm1 //ln lg lb
     case logarithm2  // log
     
-    case factorial //! 
-    case doubleFactorial //!!
+    case factorial //!  !!
     
     case divide //÷
     case multiply //*
