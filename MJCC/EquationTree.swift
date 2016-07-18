@@ -59,6 +59,8 @@ class EquationTree: NSObject {
     let root : EquationNode
     //变量表
     var variablesValue : [String : Double]
+    
+    /*
     //三角函数直接逆运算表
     private static let trigonometricTransformDict = ["sin"       : "asin",
                             "cos"       : "acos",
@@ -82,7 +84,8 @@ class EquationTree: NSObject {
          "divide"    : .multiply,
          "power"     : .root,
          "root"      : .power]
-   
+    */
+    
     init(root : EquationNode) {
         self.root = root
         self.variablesValue = [String : Double]()
@@ -134,20 +137,24 @@ class EquationTree: NSObject {
         }
         return variables
     }
+    
     func result() -> Double {
         return subEquationValue(node: root.rightChild!)
     }
+    
+    /*
     //计算变量的值
-//    func calculateVariable(variable : String) -> Double{
-//        var variableNode : EquationNode!
-//        EquationTree.traverseTreePreOrder(root: root) { (node) in
-//            if node.token.text == variable {
-//                variableNode = node
-//            }
-//        }
-//        recursionTransform(variableNode)
-//        return subEquationValue(node: root.rightChild!)
-//    }
+    func calculateVariable(variable : String) -> Double{
+        var variableNode : EquationNode!
+        EquationTree.traverseTreePreOrder(root: root) { (node) in
+            if node.token.text == variable {
+                variableNode = node
+            }
+        }
+        recursionTransform(variableNode)
+        return subEquationValue(node: root.rightChild!)
+    }
+    */
     
     //计算某结点的子式的值
     private func subEquationValue(node node : EquationNode) -> Double {
@@ -245,9 +252,11 @@ class EquationTree: NSObject {
             //根据换底公式:log(X , Y) = log(a,Y) / log(a,X)
             v = log2(subEquationValue(node: node.rightChild! )) / log2(subEquationValue(node: node.leftChild! ))
         case .factorial :
-            v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 1))
-        case .doubleFactorial :
-            v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 2))
+            if node.token.text == "factorial" {
+                v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 1))
+            }else {
+                v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 2))
+            }
         default:
             let l : Double = subEquationValue(node: node.leftChild! )
             let r : Double = subEquationValue(node: node.rightChild! )
@@ -340,7 +349,7 @@ class EquationTree: NSObject {
         }
         return str
     }
-    
+    /*
     //将树变形为某变量的表达式树：即root的leftchild为该变量，rightchild为该变量的运算式树
     //从该变量出发，循环将其上代往上提，直到该变量提为root的leftchild
     private func recursionTransform(variable : EquationNode) {
@@ -530,4 +539,5 @@ class EquationTree: NSObject {
             node.father = grandfather
         }
     }
+    */
 }
