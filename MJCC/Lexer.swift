@@ -74,7 +74,7 @@ class Lexer: NSObject {
             case ")" :
                 error = match(")")
                 if error == nil{
-                    token = Token(type: .leftBracket, text: "rightBracket")
+                    token = Token(type: .rightBracket, text: "rightBracket")
                 }
             case "," :
                 error = match(",")

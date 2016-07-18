@@ -47,7 +47,6 @@ class Parser: NSObject {
 
     init(lexer : Lexer) {
         self.lexer = lexer
-//        print("\(lookahead.type) : \(lookahead.text)")
     }
     
     func consume() -> GrammarError?{
