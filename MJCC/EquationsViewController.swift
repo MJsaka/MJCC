@@ -28,6 +28,8 @@ class EquationsViewController: UITableViewController , FinishEditEquation{
     }
     
     func onEquationNameChangedNotification() {
+        self.generateSectionsArray()
+        self.updateSectionMap()
         tableView.reloadData()
     }
     

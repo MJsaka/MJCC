@@ -264,7 +264,6 @@ class CalViewController: UIViewController , FinishEditEquation{
         }
     }
     
-    
     func finishEditEquation(name name : String ,expr : String) {
         if equation.name != name {
             equation.name = name
