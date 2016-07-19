@@ -21,27 +21,15 @@ class EquationsViewController: UITableViewController , FinishEditEquation{
         (self.view as! UITableView).sectionIndexBackgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         (self.view as! UITableView).sectionIndexTrackingBackgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         
-        // Uncomment the following line to preserve selection between presentations
-        self.clearsSelectionOnViewWillAppear = true
-        
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         self.navigationItem.leftBarButtonItem = self.editButtonItem()
+        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
+        
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(onEquationNameChangedNotification), name: EquationNameChangedNotification, object: nil)
     }
     
-    override func viewWillAppear(animated: Bool) {
-        self.tabBarController?.tabBar.hidden = false
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     func onEquationNameChangedNotification() {
         tableView.reloadData()
     }
-    
     
     func finishEditEquation(name name : String ,expr : String) {
         let equation = EquationsManager.insertEquation(name: name, expr: expr)

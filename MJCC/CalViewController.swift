@@ -49,7 +49,7 @@ class CalViewController: UIViewController , FinishEditEquation{
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.title = equation.name
-        self.tabBarController?.tabBar.hidden = true
+        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
         
         let input = equation.expr
         let lexer  = Lexer(input:input)
@@ -72,20 +72,7 @@ class CalViewController: UIViewController , FinishEditEquation{
         generateVariablesView()
         generateCalButton()
         generateResultsView()
-        
-//        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(CalViewController.keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: nil)
-//    NSNotificationCenter.defaultCenter().addObserver(self,selector:#selector(CalViewController.keyboardWillHide(_:)),name:UIKeyboardWillHideNotification,object:nil)
     }
-    
-//    func keyboardWillShow(notification : NSNotification)  {
-//        let userInfo = notification.userInfo
-//        let keyboardInfo : (AnyObject!) = userInfo.objectForKey(UIKeyboardFrameEndUserInfoKey)
-//        let keyboardRect:CGRect = keyboardInfo.CGRectValue() as CGRect
-//        let height = keyboardRect.size.height as Float
-//    }
-//    func keyboardWillHide(notification : NSNotification)  {
-//        
-//    }
     
     func generateVariablesAndResults() {
         for i in 0 ..< trees.count {
@@ -286,11 +273,6 @@ class CalViewController: UIViewController , FinishEditEquation{
         if equation.expr != expr {
             equation.expr = expr
         }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
    
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {

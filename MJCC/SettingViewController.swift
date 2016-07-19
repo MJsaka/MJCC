@@ -2,39 +2,25 @@
 //  SettingViewController.swift
 //  MJCC
 //
-//  Created by MJsaka on 16/7/13.
+//  Created by MJsaka on 16/7/19.
 //  Copyright © 2016年 MJsaka. All rights reserved.
 //
 
 import UIKit
 
-class SettingViewController: UIViewController {
+class SettingViewController: UITableViewController {
 
+    @IBOutlet weak var measurementLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-
+        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
     }
-    
+
     override func viewWillAppear(animated: Bool) {
-        self.tabBarController?.tabBar.hidden = false
+        let userDefaults = NSUserDefaults.standardUserDefaults()
+        let measure = userDefaults.stringForKey("measurement")
+        self.measurementLabel.text = measure
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
