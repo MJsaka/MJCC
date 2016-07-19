@@ -11,33 +11,30 @@
  NON_ZERO_NUM: [1-9]
  NUM: [0-9]
  
- CHAR: [a-zA-Z]
- WORD: CHAR(CHAR|NUM)*
- VARIABLE: '$''{'WORD'}'
  
  INTEGER: NON_ZERO_NUM(NUM)*
  FLOAT: (INTERGER|ZERO)'.'(NUM)*
  CONST: e , PI
- 
+ VARIABLE: '{'*'}'
+
  trigonometric: sin | cos | tan | cot | asin | acos | atan | acot
  logarithm2: log
- 
- FACTORIAL: ! 
- DOUBLE_FACTORIAL: !!
+ logarithm1: lg | ln | lb
+
+ FACTORIAL: ! | !!
  POWER_AND_ROOT: ^ | ~
  MULTIPLY_AND_DIVIDE: * | /
  PLUS_AND_MINUS: + | -
  
  META:  INTEGER | VARIABLE | FLOAT | '('EXP')'
  
- EXP0:  META(POWER_AND_ROOT META)? |
-        INTERGER (FACTORIAL||DOUBLE_FACTORIAL) |
-        trigonometric META |
-        logarithm1 META |
+ EXP0:  EXP0:  META(POWER_AND_ROOT META)? |
+        INTERGER (FACTORIAL) |
+        (trigonometric | logarithm1) META |
         logarithm2'('EXP','EXP')'
  EXP1:  EXP0 (MULTIPLY_AND_DIVIDE EXP0)*
- EXP:   EXP1 (PLUS_AND_MINUS EXP1)*
- PARSE:  EXP = EXP
+ EXP:  (minus)? EXP1 (PLUS_AND_MINUS EXP1)*
+ PARSE: VARIABLE = EXP
  */
 import UIKit
 
@@ -70,9 +67,11 @@ class Parser: NSObject {
             return (node , error)
         }
     }
+    
     func variable() -> (node : EquationNode? , error : GrammarError?) {
         return match(.variable)
     }
+    //META:  INTEGER | VARIABLE | FLOAT | '('EXP')'
     func meta() -> (node : EquationNode? , error : GrammarError?) {
         var node : EquationNode? , error : GrammarError?
         switch lookahead.type {
@@ -103,6 +102,12 @@ class Parser: NSObject {
             return (node , error)
         }
     }
+/*
+     EXP0:  META(POWER_AND_ROOT META)? |
+     INTERGER (FACTORIAL) |
+     (trigonometric | logarithm1) META |
+     logarithm2'('EXP','EXP')'
+ */
     func exp0() -> (node : EquationNode? , error : GrammarError?)  {
         var node : EquationNode? , error : GrammarError?
         switch lookahead.type {
@@ -248,6 +253,8 @@ class Parser: NSObject {
             return (node , error)
         }
     }
+    
+//    EXP1:  EXP0 (MULTIPLY_AND_DIVIDE EXP0)*
     func exp1() -> (node : EquationNode? , error : GrammarError?) {
         var node : EquationNode? , error : GrammarError?
         let exp = exp0()
@@ -280,6 +287,7 @@ class Parser: NSObject {
         }
         return (node , error)
     }
+//    EXP:  (minus)? EXP1 (PLUS_AND_MINUS EXP1)*
     func exp() -> (node : EquationNode? , error : GrammarError?) {
         var node : EquationNode? , error : GrammarError?
         if lookahead.text == "minus" {
@@ -334,6 +342,7 @@ class Parser: NSObject {
         }
         return (node , error)
     }
+//    PARSE: VARIABLE = EXP
     func parse() -> (trees : [EquationTree] , error : GrammarError?) {
         var trees = [EquationTree]() , error : GrammarError?
         let t = lexer.nextToken()
@@ -383,7 +392,7 @@ class Parser: NSObject {
             error = e
             return (trees , error)
         }
-        
+        //判断是否有结果变量重复定义
         var results = [String]()
         for tree in trees {
             let r = tree.root.leftChild!.token.text
@@ -394,6 +403,7 @@ class Parser: NSObject {
                 results.append(r)
             }
         }
+        //按照计算顺序重新排序trees
         return reorderTrees(trees)
     }
     

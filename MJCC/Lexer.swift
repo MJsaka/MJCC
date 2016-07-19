@@ -6,6 +6,26 @@
 //  Copyright © 2016年 MJsaka. All rights reserved.
 //
 
+/*
+ 
+ ZERO: 0
+ NON_ZERO_NUM: [1-9]
+ NUM: [0-9]
+ 
+ INTEGER: NON_ZERO_NUM(NUM)*
+ FLOAT: (INTERGER|ZERO)'.'(NUM)*
+ CONST: e , PI
+ VARIABLE: '{'*'}'
+ 
+ trigonometric: sin | cos | tan | cot | asin | acos | atan | acot
+ logarithm2: log
+ logarithm1: lg | ln | lb
+ 
+ FACTORIAL: ! | !!
+ POWER_AND_ROOT: ^ | ~
+ MULTIPLY_AND_DIVIDE: * | /
+ PLUS_AND_MINUS: + | -
+ */
 import UIKit
 
 class Lexer: NSObject {
@@ -163,6 +183,10 @@ class Lexer: NSObject {
                 return (token , error)
             }
             text += "."
+            if !isNumber() {
+                error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'")
+                return (token , error)
+            }
             while isNumber() {
                 text.append(c)
                 consume()
@@ -176,6 +200,10 @@ class Lexer: NSObject {
                 consume()
                 type = .float
                 text += "."
+                if !isNumber() {
+                    error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'")
+                    return (token , error)
+                }
                 while isNumber() {
                     text.append(c)
                     consume()
