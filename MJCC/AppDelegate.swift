@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import IQKeyboardManagerSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,6 +21,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
         userDefaults.setObject("degree", forKey: "measurement")
 
+        IQKeyboardManager.sharedManager().enable = true
+        
         return true
     }
 
