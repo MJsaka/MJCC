@@ -70,8 +70,9 @@ class CalViewController: UIViewController , FinishEditEquation{
         generateContentView()
         generateEquationLabel()
         generateVariablesView()
-        generateResultsView()
         generateCalButton()
+        generateResultsView()
+        
 //        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(CalViewController.keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: nil)
 //    NSNotificationCenter.defaultCenter().addObserver(self,selector:#selector(CalViewController.keyboardWillHide(_:)),name:UIKeyboardWillHideNotification,object:nil)
     }
@@ -179,11 +180,26 @@ class CalViewController: UIViewController , FinishEditEquation{
             
             label.translatesAutoresizingMaskIntoConstraints = false
             textField.translatesAutoresizingMaskIntoConstraints = false
-            let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[label(100)]-20-[textField]-20-|", options: .AlignAllCenterY, metrics: nil, views: ["label":label,"textField":textField])
+            let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[label]-20-[textField]-20-|", options: .AlignAllCenterY, metrics: nil, views: ["label":label,"textField":textField])
+            let constrain = NSLayoutConstraint(item: textField, attribute: .Width, relatedBy: .Equal, toItem: label, attribute: .Width, multiplier: 2.0, constant: 0)
             let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[label(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label])
             let constrains3 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%f-[textField(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["textField":textField])
             variablesView.addConstraints(constrains1 + constrains2 + constrains3)
+            variablesView.addConstraint(constrain)
         }
+    }
+    
+    func generateCalButton() {
+        calButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: calButtonHeight))
+        contentView.addSubview(calButton)
+        calButton.translatesAutoresizingMaskIntoConstraints = false
+        calButton.backgroundColor = UIColor.blueColor()
+        calButton.setTitle("计算", forState: .Normal)
+        calButton.addTarget(self, action: #selector(CalViewController.calculate(_:)), forControlEvents: .TouchUpInside)
+        
+        let buttonConstrain1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[calButton]-20-|", options: .AlignAllCenterX, metrics: nil, views: ["calButton" : calButton])
+        let buttonConstrain2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[variablesView]-20-[calButton(%lf)]" , calButtonHeight), options: .AlignAllCenterX, metrics: nil, views: ["variablesView":variablesView,"calButton" : calButton])
+        contentView.addConstraints(buttonConstrain1 + buttonConstrain2)
     }
     
     func generateResultsView() {
@@ -192,7 +208,7 @@ class CalViewController: UIViewController , FinishEditEquation{
         contentView.addSubview(resultsView)
         resultsView.translatesAutoresizingMaskIntoConstraints = false
         let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|[resultsView]|", options: .AlignAllCenterY, metrics: nil, views: ["resultsView":resultsView])
-        let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[variablesView]-20-[resultsView(%lf)]" , resultsViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["resultsView":resultsView,"variablesView":variablesView])
+        let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[calButton]-20-[resultsView(%lf)]" , resultsViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["resultsView":resultsView,"calButton":calButton])
         contentView.addConstraints(constrains1 + constrains2)
         
         for i in 0 ..< results.count{
@@ -213,24 +229,13 @@ class CalViewController: UIViewController , FinishEditEquation{
             
             label.translatesAutoresizingMaskIntoConstraints = false
             resultLabel.translatesAutoresizingMaskIntoConstraints = false
-            let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[label(100)]-20-[resultLabel]-20-|", options: .AlignAllCenterY, metrics: nil, views: ["label":label,"resultLabel":resultLabel])
+            let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[label]-20-[resultLabel]-20-|", options: .AlignAllCenterY, metrics: nil, views: ["label":label,"resultLabel":resultLabel])
+            let constrain = NSLayoutConstraint(item: resultLabel, attribute: .Width, relatedBy: .Equal, toItem: label, attribute: .Width, multiplier: 2.0, constant: 0)
             let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%lf-[label(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label])
             let constrains3 = NSLayoutConstraint.constraintsWithVisualFormat(String(format: "V:|-%lf-[resultLabel(30)]" , 50 * CGFloat(i)), options: NSLayoutFormatOptions(), metrics: nil, views: ["resultLabel":resultLabel])
             resultsView.addConstraints(constrains1 + constrains2 + constrains3)
+            resultsView.addConstraint(constrain)
         }
-    }
-    
-    func generateCalButton() {
-        calButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: calButtonHeight))
-        contentView.addSubview(calButton)
-        calButton.translatesAutoresizingMaskIntoConstraints = false
-        calButton.backgroundColor = UIColor.blueColor()
-        calButton.setTitle("计算", forState: .Normal)
-        calButton.addTarget(self, action: #selector(CalViewController.calculate(_:)), forControlEvents: .TouchUpInside)
-        
-        let buttonConstrain1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[calButton]-20-|", options: .AlignAllCenterX, metrics: nil, views: ["calButton" : calButton])
-        let buttonConstrain2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[resultsView]-20-[calButton(%lf)]" , calButtonHeight), options: .AlignAllCenterX, metrics: nil, views: ["resultsView":resultsView,"calButton" : calButton])
-        contentView.addConstraints(buttonConstrain1 + buttonConstrain2)
     }
     
     
