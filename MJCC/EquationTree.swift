@@ -167,8 +167,7 @@ class EquationTree: NSObject {
         case .const :
             if node.token.text == "e" {
                 v = M_E
-            }
-            if node.token.text == "PI" {
+            }else if node.token.text == "PI" {
                 v = M_PI
             }
         case .trigonometric :
@@ -176,66 +175,44 @@ class EquationTree: NSObject {
             let measure = userDefaults.stringForKey("measurement")
             let subValue = subEquationValue(node: node.leftChild!)
             
+            var angle : Double
+            if measure == "degree" {
+                angle = subValue / 180 * M_PI
+            }else{
+                angle = subValue
+            }
+            
+            var trigonometric : Double?
+            var antiTrigonometric : Double?
+            
             switch node.token.text {
             case "sin":
-                if measure == "degree" {
-                    let angle = subValue / 180 * M_PI
-                    v = sin(angle)
-                }else{
-                    v = sin(subValue)
-                }
+                trigonometric = sin(angle)
             case "cos" :
-                if measure == "degree" {
-                    let angle = subValue / 180 * M_PI
-                    v = cos(angle)
-                }else {
-                    v = cos(subValue)
-                }
+                trigonometric = cos(angle)
             case "tan" :
-                if measure == "degree" {
-                    let angle = subValue / 180 * M_PI
-                    v = tan(angle)
-                }else{
-                    v = tan(subValue)
-                }
+                trigonometric = tan(angle)
             case "cot" :
-                if measure == "degree" {
-                    let angle = subValue / 180 * M_PI
-                    v = tan(M_PI_2 - angle)
-                }else {
-                    v = tan(M_PI_2 - subValue)
-                }
+                trigonometric = 1 / tan(angle)
             case "asin" :
-                let r = asin(subValue)
-                if measure == "degree" {
-                    v = r * 180 / M_PI
-                }else{
-                    v = r
-                }
+                antiTrigonometric = asin(subValue)
             case "acos" :
-                let r = acos(subValue)
-                if measure == "degree" {
-                    v = r * 180 / M_PI
-                }else{
-                    v = r
-                }
+                antiTrigonometric = acos(subValue)
             case "atan" :
-                let r = atan(subValue)
-                if measure == "degree" {
-                    v = r * 180 / M_PI
-                }else {
-                    v = r
-                }
+                antiTrigonometric = atan(subValue)
             case "acot" :
-                let t = atan(subValue)
-                let r = t > 0 ? M_PI_2 - t : 0 - M_PI_2 - t
-                if measure == "degree" {
-                    v = r * 180 / M_PI
-                }else{
-                    v = r
-                }
+                antiTrigonometric = atan(1/subValue)
             default:
                 break
+            }
+            if let t = trigonometric {
+                v = t
+            }else if let a = antiTrigonometric {
+                if measure == "degree" {
+                    v = a * 180 / M_PI
+                }else{
+                    v = a
+                }
             }
         case .logarithm1 :
             switch node.token.text {
@@ -257,25 +234,32 @@ class EquationTree: NSObject {
             }else {
                 v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 2))
             }
-        default:
+        case .plus:
             let l : Double = subEquationValue(node: node.leftChild! )
             let r : Double = subEquationValue(node: node.rightChild! )
-            switch node.token.type {
-            case .plus:
-                v = l + r
-            case .minus :
-                v = l - r
-            case .multiply :
-                v = l * r
-            case .divide :
-                v = l / r
-            case .power :
-                v = pow(l , r)
-            case .root :
-                v = pow(l, 1/r)
-            default:
-                break
-            }
+            v = l + r
+        case .minus :
+            let l : Double = subEquationValue(node: node.leftChild! )
+            let r : Double = subEquationValue(node: node.rightChild! )
+            v = l - r
+        case .multiply :
+            let l : Double = subEquationValue(node: node.leftChild! )
+            let r : Double = subEquationValue(node: node.rightChild! )
+            v = l * r
+        case .divide :
+            let l : Double = subEquationValue(node: node.leftChild! )
+            let r : Double = subEquationValue(node: node.rightChild! )
+            v = l / r
+        case .power :
+            let l : Double = subEquationValue(node: node.leftChild! )
+            let r : Double = subEquationValue(node: node.rightChild! )
+            v = pow(l , r)
+        case .root :
+            let l : Double = subEquationValue(node: node.leftChild! )
+            let r : Double = subEquationValue(node: node.rightChild! )
+            v = pow(l, 1/r)
+        default:
+            break
         }
         return v
     }
