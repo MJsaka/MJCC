@@ -9,7 +9,7 @@
 import UIKit
 
 //计算阶乘或双阶乘
-public func factorial(n : Int , step : Int) -> Int {
+public func factorial(n : Double , step : Double) -> Double {
     if n == 0 || n == 1{
         return 1
     }else {
@@ -60,67 +60,12 @@ class EquationTree: NSObject {
     //变量表
     var variablesValue : [String : Double]
     
-    /*
-    //三角函数直接逆运算表
-    private static let trigonometricTransformDict = ["sin"       : "asin",
-                            "cos"       : "acos",
-                            "tan"       : "atan",
-                            "cot"       : "acot",
-                            "asin"    : "sin",
-                            "acos"    : "cos",
-                            "atan"    : "tan",
-                            "acot"    : "cot"]
-    //四则、乘方、开方直接逆运算表
-    private static let leftChildTransformDict = ["plus"      : "minus",
-                            "minus"     : "plus",
-                            "multiply"  : "divide",
-                            "divide"    : "multiply",
-                            "power"     : "root",
-                            "root"      : "power"]
-    private static let leftChildTransformTokenTypeDict : [String : TokenType] =
-        ["plus"      : .minus,
-         "minus"     : .plus,
-         "multiply"  : .divide,
-         "divide"    : .multiply,
-         "power"     : .root,
-         "root"      : .power]
-    */
-    
     init(root : EquationNode) {
         self.root = root
         self.variablesValue = [String : Double]()
         super.init()
         
     }
-    
-    static func traverseTreePreOrder(root node : EquationNode , visitor visit : (EquationNode) -> Void) {
-        visit(node)
-        if let l = node.leftChild {
-            traverseTreePreOrder(root: l , visitor: visit)
-        }
-        if let r = node.rightChild {
-            traverseTreePreOrder(root: r, visitor: visit)
-        }
-    }
-    static func traverseTreeInOrder(root node : EquationNode , visitor visit : (EquationNode) -> Void) {
-        if let l = node.leftChild {
-            traverseTreePreOrder(root: l , visitor: visit)
-        }
-        visit(node)
-        if let r = node.rightChild {
-            traverseTreePreOrder(root: r, visitor: visit)
-        }
-    }
-    static func traverseTreePostOrder(root node : EquationNode , visitor visit : (EquationNode) -> Void) {
-        if let l = node.leftChild {
-            traverseTreePreOrder(root: l , visitor: visit)
-        }
-        if let r = node.rightChild {
-            traverseTreePreOrder(root: r, visitor: visit)
-        }
-        visit(node)
-    }
-
     //返回结果变量
     func resultVariable() -> String{
         return root.leftChild!.token.text
@@ -137,28 +82,57 @@ class EquationTree: NSObject {
         }
         return variables
     }
-    
+    //计算结果
     func result() -> Double {
         return subEquationValue(node: root.rightChild!)
     }
     
-    /*
-    //计算变量的值
-    func calculateVariable(variable : String) -> Double{
-        var variableNode : EquationNode!
-        EquationTree.traverseTreePreOrder(root: root) { (node) in
-            if node.token.text == variable {
-                variableNode = node
-            }
-        }
-        recursionTransform(variableNode)
-        return subEquationValue(node: root.rightChild!)
+    //从表达式树生成表达式串
+    func equationString() -> String {
+        return subString(node : root )
     }
-    */
+    //先序遍历
+    static func traverseTreePreOrder(root node : EquationNode , visitor visit : (EquationNode) -> Void) {
+        visit(node)
+        if let l = node.leftChild {
+            traverseTreePreOrder(root: l , visitor: visit)
+        }
+        if let r = node.rightChild {
+            traverseTreePreOrder(root: r, visitor: visit)
+        }
+    }
+    //中序遍历
+    static func traverseTreeInOrder(root node : EquationNode , visitor visit : (EquationNode) -> Void) {
+        if let l = node.leftChild {
+            traverseTreePreOrder(root: l , visitor: visit)
+        }
+        visit(node)
+        if let r = node.rightChild {
+            traverseTreePreOrder(root: r, visitor: visit)
+        }
+    }
+    //后序遍历
+    static func traverseTreePostOrder(root node : EquationNode , visitor visit : (EquationNode) -> Void) {
+        if let l = node.leftChild {
+            traverseTreePreOrder(root: l , visitor: visit)
+        }
+        if let r = node.rightChild {
+            traverseTreePreOrder(root: r, visitor: visit)
+        }
+        visit(node)
+    }
     
     //计算某结点的子式的值
     private func subEquationValue(node node : EquationNode) -> Double {
         var v : Double!
+        var l : Double?
+        var r : Double?
+        if let lc = node.leftChild {
+            l = subEquationValue(node: lc)
+        }
+        if let rc = node.rightChild {
+            r = subEquationValue(node: rc)
+        }
         switch node.token.type {
         case .variable:
             v = variablesValue[node.token.text]
@@ -173,13 +147,12 @@ class EquationTree: NSObject {
         case .trigonometric :
             let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
             let measure = userDefaults.stringForKey("measurement")
-            let subValue = subEquationValue(node: node.leftChild!)
             
             var angle : Double
             if measure == "degree" {
-                angle = subValue / 180 * M_PI
+                angle = l! / 180 * M_PI
             }else{
-                angle = subValue
+                angle = l!
             }
             
             var trigonometric : Double?
@@ -195,13 +168,13 @@ class EquationTree: NSObject {
             case "cot" :
                 trigonometric = 1 / tan(angle)
             case "asin" :
-                antiTrigonometric = asin(subValue)
+                antiTrigonometric = asin(l!)
             case "acos" :
-                antiTrigonometric = acos(subValue)
+                antiTrigonometric = acos(l!)
             case "atan" :
-                antiTrigonometric = atan(subValue)
+                antiTrigonometric = atan(l!)
             case "acot" :
-                antiTrigonometric = atan(1/subValue)
+                antiTrigonometric = atan(1/l!)
             default:
                 break
             }
@@ -217,57 +190,41 @@ class EquationTree: NSObject {
         case .logarithm1 :
             switch node.token.text {
             case "lg" :
-                v = log10(subEquationValue(node: node.leftChild! ))
+                v = log10(l!)
             case "ln" :
-                v = log(subEquationValue(node: node.leftChild! ))
+                v = log(l!)
             case "lb" :
-                v = log2(subEquationValue(node: node.leftChild! ))
+                v = log2(l!)
             default:
                 break
             }
         case .logarithm2 :
             //根据换底公式:log(X , Y) = log(a,Y) / log(a,X)
-            v = log2(subEquationValue(node: node.rightChild! )) / log2(subEquationValue(node: node.leftChild! ))
+            v = log2(l!) / log2(r!)
         case .factorial :
             if node.token.text == "factorial" {
-                v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 1))
+                v = factorial(l!, step: 1)
             }else {
-                v = Double(factorial(Int(subEquationValue(node: node.leftChild! )), step: 2))
+                v = factorial(l!, step: 2)
             }
         case .plus:
-            let l : Double = subEquationValue(node: node.leftChild! )
-            let r : Double = subEquationValue(node: node.rightChild! )
-            v = l + r
+            v = l! + r!
         case .minus :
-            let l : Double = subEquationValue(node: node.leftChild! )
-            let r : Double = subEquationValue(node: node.rightChild! )
-            v = l - r
+            v = l! - r!
         case .multiply :
-            let l : Double = subEquationValue(node: node.leftChild! )
-            let r : Double = subEquationValue(node: node.rightChild! )
-            v = l * r
+            v = l! * r!
         case .divide :
-            let l : Double = subEquationValue(node: node.leftChild! )
-            let r : Double = subEquationValue(node: node.rightChild! )
-            v = l / r
+            v = l! / r!
         case .power :
-            let l : Double = subEquationValue(node: node.leftChild! )
-            let r : Double = subEquationValue(node: node.rightChild! )
-            v = pow(l , r)
+            v = pow(l! , r!)
         case .root :
-            let l : Double = subEquationValue(node: node.leftChild! )
-            let r : Double = subEquationValue(node: node.rightChild! )
-            v = pow(l, 1/r)
+            v = pow(l!, 1/r!)
         default:
             break
         }
         return v
     }
-    
-    //从表达式树生成表达式串
-    func equationString() -> String {
-        return subString(node : root )
-    }
+
     private func subString(node node : EquationNode) -> String{
         let s : String = node.name()
         var l : String = ""
@@ -333,7 +290,45 @@ class EquationTree: NSObject {
         }
         return str
     }
-    /*
+/*
+     
+     //三角函数直接逆运算表
+     private static let trigonometricTransformDict = ["sin"       : "asin",
+     "cos"       : "acos",
+     "tan"       : "atan",
+     "cot"       : "acot",
+     "asin"    : "sin",
+     "acos"    : "cos",
+     "atan"    : "tan",
+     "acot"    : "cot"]
+     //四则、乘方、开方直接逆运算表
+     private static let leftChildTransformDict = ["plus"      : "minus",
+     "minus"     : "plus",
+     "multiply"  : "divide",
+     "divide"    : "multiply",
+     "power"     : "root",
+     "root"      : "power"]
+     private static let leftChildTransformTokenTypeDict : [String : TokenType] =
+     ["plus"      : .minus,
+     "minus"     : .plus,
+     "multiply"  : .divide,
+     "divide"    : .multiply,
+     "power"     : .root,
+     "root"      : .power]
+ 
+     //计算变量的值
+    func calculateVariable(variable : String) -> Double{
+        var variableNode : EquationNode!
+        EquationTree.traverseTreePreOrder(root: root) { (node) in
+            if node.token.text == variable {
+                variableNode = node
+            }
+        }
+        recursionTransform(variableNode)
+        return subEquationValue(node: root.rightChild!)
+    }
+     
+     
     //将树变形为某变量的表达式树：即root的leftchild为该变量，rightchild为该变量的运算式树
     //从该变量出发，循环将其上代往上提，直到该变量提为root的leftchild
     private func recursionTransform(variable : EquationNode) {
@@ -523,5 +518,5 @@ class EquationTree: NSObject {
             node.father = grandfather
         }
     }
-    */
+*/
 }
