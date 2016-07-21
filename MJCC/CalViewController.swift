@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import Localize_Swift
+
 class Variable: NSObject {
     var name :String!
     var nameLabel: UILabel?
@@ -181,7 +183,7 @@ class CalViewController: UIViewController , FinishEditEquation{
         contentView.addSubview(calButton)
         calButton.translatesAutoresizingMaskIntoConstraints = false
         calButton.backgroundColor = UIColor.blueColor()
-        calButton.setTitle("计算", forState: .Normal)
+        calButton.setTitle("calculate".localized() , forState: .Normal)
         calButton.addTarget(self, action: #selector(CalViewController.calculate(_:)), forControlEvents: .TouchUpInside)
         
         let buttonConstrain1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[calButton]-20-|", options: .AlignAllCenterX, metrics: nil, views: ["calButton" : calButton])
@@ -234,8 +236,8 @@ class CalViewController: UIViewController , FinishEditEquation{
             if let v = Double(variable.inputField!.text!) {
                 variable.value = v
             }else{
-                let ac = UIAlertController(title: "变量值错误", message: "变量\(name)的输入值有误，请重新输入", preferredStyle: .Alert)
-                ac.addAction(UIAlertAction(title: "确定", style: .Default, handler: nil))
+                let ac = UIAlertController(title: "error".localized(), message: "\("variable".localized()) '\(name)' \("inputError".localized())", preferredStyle: .Alert)
+                ac.addAction(UIAlertAction(title: "ok".localized(), style: .Default, handler: nil))
                 self.presentViewController(ac, animated: true, completion: nil)
                 break
             }

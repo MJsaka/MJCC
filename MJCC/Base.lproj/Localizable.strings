@@ -1,0 +1,21 @@
+/* 
+  Localize.strings
+  MJCC
+
+  Created by MJsaka on 16/7/20.
+  Copyright © 2016年 MJsaka. All rights reserved.
+ */
+"calculate" = "Calculate";
+"error" = "Error";
+"inputError" = "InputError";
+"ok" = "OK";
+"variable" = "Variable";
+"degree" = "Degree";
+"radians" = "Radians";
+"expected" = "Expected";
+"unrecognizable" = "Unrecognizable";
+"character" = "Character";
+"expected digtal after '.'" = "expected digtal after '.'";
+"result" = "Result";
+"redefined" = "redefined";
+"cyclical referenced" = "cyclical referenced";

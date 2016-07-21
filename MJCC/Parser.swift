@@ -37,6 +37,7 @@
  PARSE: VARIABLE = EXP
  */
 import UIKit
+import Localize_Swift
 
 class Parser: NSObject {
     let lexer : Lexer
@@ -63,7 +64,7 @@ class Parser: NSObject {
             error = consume()
             return (node , error)
         }else{
-            error = GrammarError(type: .unExpectedToken, info: "expected '\(type)' but found '\(lookahead.type)'")
+            error = GrammarError(type: .unExpectedToken, info: "'\(lookahead.text)' \("inputError".localized()) , \("expected".localized()) '\(type)'")
             return (node , error)
         }
     }
@@ -98,7 +99,7 @@ class Parser: NSObject {
         case .variable , .integer , .float , .const:
             return match(lookahead.type)
         default:
-            error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(lookahead.text)'")
+            error = GrammarError(type: .unExpectedToken, info: "'\(lookahead.text)' \("unrecognizable".localized())")
             return (node , error)
         }
     }
@@ -249,7 +250,7 @@ class Parser: NSObject {
             }
             return (node , error)
         default:
-            error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(lookahead.text)'")
+            error = GrammarError(type: .unExpectedToken, info: "'\(lookahead.text)' \("unrecognizable".localized())")
             return (node , error)
         }
     }
@@ -397,7 +398,7 @@ class Parser: NSObject {
         for tree in trees {
             let r = tree.root.leftChild!.token.text
             if results.contains(r) {
-                error = GrammarError(type: .redefinedResultVariable, info: "redefined result variable '\(r)'")
+                error = GrammarError(type: .redefinedResultVariable, info: "\("result".localized()) \("variable".localized()) '\(r)' \("redefined".localized())")
                 return (trees , error)
             }else{
                 results.append(r)
@@ -464,7 +465,7 @@ class Parser: NSObject {
             for v in vs {
                 for i in 0 ..< rs.count{
                     if v == rs[i] && i >= index {
-                        error = GrammarError(type: .cyclicallyReferencedVariable, info: "variable '\(v)' cyclical referenced")
+                        error = GrammarError(type: .cyclicallyReferencedVariable, info: "\("variable".localized()) '\(v)' \("cyclical referenced".localized())")
                         return (newTrees , error)
                     }
                 }

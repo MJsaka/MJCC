@@ -27,6 +27,7 @@
  PLUS_AND_MINUS: + | -
  */
 import UIKit
+import Localize_Swift
 
 class Lexer: NSObject {
     let input : String
@@ -51,7 +52,7 @@ class Lexer: NSObject {
             consume()
             return nil
         }else{
-            return GrammarError(type: .unExpectedCharacter, info: "expected '\(x)' but found '\(c)'")
+            return GrammarError(type: .unExpectedCharacter, info: "'\(c)' \("inputError".localized()) , \("expected".localized()) '\(x)'")
         }
     }
     func isLetter() -> Bool {
@@ -142,7 +143,7 @@ class Lexer: NSObject {
                     token = Token(type: .minus,text: "minus")
                 }
             default:
-                error = GrammarError(type: .unExpectedCharacter, info: "unexpected character '\(c)'")
+                error = GrammarError(type: .unExpectedCharacter, info: "\("unrecognizable".localized()) \("character".localized()) '\(c)'")
             }
             return (token , error)
         }//while
@@ -184,7 +185,7 @@ class Lexer: NSObject {
             }
             text += "."
             if !isNumber() {
-                error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'")
+                error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'".localized())
                 return (token , error)
             }
             while isNumber() {
@@ -201,7 +202,7 @@ class Lexer: NSObject {
                 type = .float
                 text += "."
                 if !isNumber() {
-                    error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'")
+                    error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'".localized())
                     return (token , error)
                 }
                 while isNumber() {
@@ -251,7 +252,7 @@ class Lexer: NSObject {
         case "e" , "PI" :
             type = .const
         default:
-            error = GrammarError(type: .unExpectedToken, info: "unexpected token '\(text)'")
+            error = GrammarError(type: .unExpectedToken, info: "'\(text)' \("unrecognizable".localized())")
             return (token , error)
         }
         token = Token(type: type, text: text)

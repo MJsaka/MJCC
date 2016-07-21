@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Localize_Swift
 
 protocol FinishEditEquation {
     func finishEditEquation(name name : String ,expr : String)
@@ -34,17 +35,18 @@ class EditEquationViewController: UIViewController {
     @IBAction func finishEdit() {
         let name = nameField.text
         let expr = exprField.text
+        
         if name == nil || expr == nil || name == "" || expr == ""{
-            let ac = UIAlertController(title: "错误", message: "名称或公式未填写", preferredStyle: .Alert)
-            ac.addAction(UIAlertAction(title: "确定", style: .Default, handler: nil))
+            let ac = UIAlertController(title: "error".localized(), message: "inputError".localized(), preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: "ok".localized(), style: .Default, handler: nil))
             self.presentViewController(ac, animated: true, completion: nil)
         }else{
             let lexer  = Lexer(input:expr)
             let parser  = Parser(lexer: lexer)
             let t = parser.parse()
             if let e = t.error {
-                let ac = UIAlertController(title: "错误", message: "\(e.info)", preferredStyle: .Alert)
-                ac.addAction(UIAlertAction(title: "确定", style: .Default, handler: nil))
+                let ac = UIAlertController(title: "error".localized(), message: "\(e.info)", preferredStyle: .Alert)
+                ac.addAction(UIAlertAction(title: "ok".localized() , style: .Default, handler: nil))
                 self.presentViewController(ac, animated: true, completion: nil)
             }else{
                 let trees = t.trees

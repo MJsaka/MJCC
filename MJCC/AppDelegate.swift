@@ -8,6 +8,7 @@
 
 import UIKit
 import IQKeyboardManagerSwift
+import Localize_Swift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,10 +19,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
 
-        let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
-        userDefaults.setObject("degree", forKey: "measurement")
-
         IQKeyboardManager.sharedManager().enable = true
+
+        
+        let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
+        if (userDefaults.stringForKey("measurement") == nil) {
+            userDefaults.setObject("degree", forKey: "measurement")
+        }
+        Localize.resetCurrentLanguageToDefault()
         
         return true
     }

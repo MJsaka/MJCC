@@ -19,8 +19,9 @@ class SettingViewController: UITableViewController {
 
     override func viewWillAppear(animated: Bool) {
         let userDefaults = NSUserDefaults.standardUserDefaults()
+        
         let measure = userDefaults.stringForKey("measurement")
-        self.measurementLabel.text = measure
+        self.measurementLabel.text = measure!.localized()
     }
 
 }
