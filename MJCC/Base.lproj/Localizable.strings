@@ -5,17 +5,42 @@
   Created by MJsaka on 16/7/20.
   Copyright © 2016年 MJsaka. All rights reserved.
  */
-"calculate" = "Calculate";
-"error" = "Error";
-"inputError" = "InputError";
-"ok" = "OK";
-"variable" = "Variable";
-"degree" = "Degree";
-"radians" = "Radians";
-"expected" = "Expected";
-"unrecognizable" = "Unrecognizable";
-"character" = "Character";
-"expected digtal after '.'" = "expected digtal after '.'";
-"result" = "Result";
-"redefined" = "redefined";
+"symbol" = "symbol";
+"calculate" = "calculate";
 "cyclical referenced" = "cyclical referenced";
+"degree" = "degree";
+"digit" = "digit";
+"error" = "error";
+"expect" = "expect";
+"inputError" = "inputError";
+"ok" = "ok";
+"radians" = "radians";
+"recalculated" = "recalculated";
+"unrecognizable" = "unrecognizable";
+"variable" = "variable";
+
+//Token
+"eof" = "eof";
+
+"leftBracket" = "(";
+"rightBracket" = ")";
+"comma" = ",";
+"simicolon" = ";";
+
+"integer" = "integer";
+"float" = "float";
+"const" = "const";
+
+"power" = "^";
+"root" = "~";
+
+"factorial" = "!";
+"doubleFactorial" = "!!";
+
+"divide" = "/";
+"multiply" = "*";
+
+"minus" = "-";
+"plus" = "+";
+
+"equal" = "=";

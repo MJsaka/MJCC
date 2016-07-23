@@ -52,16 +52,15 @@ class Lexer: NSObject {
             consume()
             return nil
         }else{
-            return GrammarError(type: .unExpectedCharacter, info: "'\(c)' \("inputError".localized()) , \("expected".localized()) '\(x)'")
+            let input = (c == "\0" ? "eof".localized() : "\(c)")
+            return GrammarError.matchError(input: input, expect: "\(x)")
         }
     }
-    func isLetter() -> Bool {
-        return c >= "a" && c <= "z" || c >= "A" && c <= "Z"
+    
+    func isAlphabet() -> Bool {
+        return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z")
     }
-    func isLowerCaseLetter() -> Bool {
-        return c >= "a" && c <= "z"
-    }
-    func isNumber() -> Bool {
+    func isDigit() -> Bool {
         return c >= "0" && c <= "9"
     }
     func isZero() -> Bool {
@@ -143,7 +142,7 @@ class Lexer: NSObject {
                     token = Token(type: .minus,text: "minus")
                 }
             default:
-                error = GrammarError(type: .unExpectedCharacter, info: "\("unrecognizable".localized()) \("character".localized()) '\(c)'")
+                error = GrammarError.unrecognizableSymbol("\(c)")
             }
             return (token , error)
         }//while
@@ -184,16 +183,16 @@ class Lexer: NSObject {
                 return (token , error)
             }
             text += "."
-            if !isNumber() {
-                error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'".localized())
+            if !isDigit() {
+                error = GrammarError.matchError(input: "\(c)", expect: "digit".localized())
                 return (token , error)
             }
-            while isNumber() {
+            while isDigit() {
                 text.append(c)
                 consume()
             }
         }else{
-            while isNumber() {
+            while isDigit() {
                 text.append(c)
                 consume()
             }
@@ -201,11 +200,11 @@ class Lexer: NSObject {
                 consume()
                 type = .float
                 text += "."
-                if !isNumber() {
-                    error = GrammarError(type: .unExpectedCharacter, info: "expected digtal after '.'".localized())
+                if !isDigit() {
+                    error = GrammarError.matchError(input: "\(c)", expect: "digit".localized())
                     return (token , error)
                 }
-                while isNumber() {
+                while isDigit() {
                     text.append(c)
                     consume()
                 }
@@ -220,6 +219,10 @@ class Lexer: NSObject {
         var text : String = ""
         error = match("{")
         if error != nil {
+            return (token , error)
+        }
+        if c == "}" {
+            error = GrammarError.matchError(input: "\(c)", expect: "symbol".localized())
             return (token , error)
         }
         while p < input.endIndex && c != "}"{
@@ -238,7 +241,7 @@ class Lexer: NSObject {
         var text : String = ""
         var type : TokenType = .trigonometric
         
-        while isLetter() {
+        while isAlphabet() {
             text.append(c)
             consume()
         }
@@ -252,7 +255,7 @@ class Lexer: NSObject {
         case "e" , "PI" :
             type = .const
         default:
-            error = GrammarError(type: .unExpectedToken, info: "'\(text)' \("unrecognizable".localized())")
+            error = GrammarError.unrecognizableSymbol("\(text)")
             return (token , error)
         }
         token = Token(type: type, text: text)

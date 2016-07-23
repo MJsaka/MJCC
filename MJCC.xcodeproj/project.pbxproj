@@ -11,7 +11,6 @@
 		C50D7D291D1AE2F800FB622A /* TreeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C50D7D281D1AE2F800FB622A /* TreeViewController.swift */; };
 		C5112A9E1D3FB2A500A7DFF9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C5112AA01D3FB2A500A7DFF9 /* Main.storyboard */; };
 		C5112AA61D3FB51500A7DFF9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C5112AA81D3FB51500A7DFF9 /* Localizable.strings */; };
-		C5112AAD1D3FB88C00A7DFF9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C5112AAC1D3FB88C00A7DFF9 /* Info.plist */; };
 		C5267D531D255B1600E92363 /* EquationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5267D521D255B1600E92363 /* EquationsManager.swift */; };
 		C5316AFD1D3D14B000F73143 /* GrammarError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5316AFC1D3D14B000F73143 /* GrammarError.swift */; };
 		C55999EF1D2482A300AD1DDD /* EquationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55999EE1D2482A300AD1DDD /* EquationsViewController.swift */; };
@@ -366,7 +365,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C5112AAD1D3FB88C00A7DFF9 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

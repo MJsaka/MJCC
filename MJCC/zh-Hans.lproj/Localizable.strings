@@ -5,17 +5,42 @@
   Created by MJsaka on 16/7/20.
   Copyright © 2016年 MJsaka. All rights reserved.
 */
+"symbol" = "符号";
+"calculate" = "计算";
+"cyclical referenced" = "循环引用";
+"degree" = "角度";
+"digit" = "数字";
 "error" = "错误";
-"variable" = "变量";
+"expect" = "需要";
 "inputError" = "输入错误";
 "ok" = "确定";
-"calculate" = "计算";
-"degree" = "角度";
 "radians" = "弧度";
-"expected" = "需要";
+"recalculated" = "重复计算";
 "unrecognizable" = "无法识别";
-"character" = "字符";
-"expected digtal after '.'" = "小数点后需要数字";
-"result" = "结果";
-"redefined" = "重复定义";
-"cyclical referenced" = "循环引用";
+"variable" = "变量";
+
+//Token
+"eof" = "结束符";
+
+"leftBracket" = "(";
+"rightBracket" = ")";
+"comma" = ",";
+"simicolon" = ";";
+
+"integer" = "整数";
+"float" = "小数";
+"const" = "常量";
+
+"power" = "^";
+"root" = "~";
+
+"factorial" = "!";
+"doubleFactorial" = "!!";
+
+"divide" = "/";
+"multiply" = "*";
+
+"minus" = "-";
+"plus" = "+";
+
+"equal" = "=";

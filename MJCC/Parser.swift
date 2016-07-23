@@ -64,7 +64,7 @@ class Parser: NSObject {
             error = consume()
             return (node , error)
         }else{
-            error = GrammarError(type: .unExpectedToken, info: "'\(lookahead.text)' \("inputError".localized()) , \("expected".localized()) '\(type)'")
+            error = GrammarError.matchError(input: lookahead.text.localized(), expect: "\(type)".localized())
             return (node , error)
         }
     }
@@ -99,7 +99,7 @@ class Parser: NSObject {
         case .variable , .integer , .float , .const:
             return match(lookahead.type)
         default:
-            error = GrammarError(type: .unExpectedToken, info: "'\(lookahead.text)' \("unrecognizable".localized())")
+            error = GrammarError.unexpectedToken(lookahead.text.localized())
             return (node , error)
         }
     }
@@ -250,7 +250,7 @@ class Parser: NSObject {
             }
             return (node , error)
         default:
-            error = GrammarError(type: .unExpectedToken, info: "'\(lookahead.text)' \("unrecognizable".localized())")
+            error = GrammarError.unexpectedToken(lookahead.text.localized())
             return (node , error)
         }
     }
@@ -393,12 +393,12 @@ class Parser: NSObject {
             error = e
             return (trees , error)
         }
-        //判断是否有结果变量重复定义
+        //判断是否有同一个变量用多个等式计算
         var results = [String]()
         for tree in trees {
-            let r = tree.root.leftChild!.token.text
+            let r = tree.resultVariable()
             if results.contains(r) {
-                error = GrammarError(type: .redefinedResultVariable, info: "\("result".localized()) \("variable".localized()) '\(r)' \("redefined".localized())")
+                error = GrammarError.recalculatedResultVariable(r)
                 return (trees , error)
             }else{
                 results.append(r)
@@ -465,7 +465,7 @@ class Parser: NSObject {
             for v in vs {
                 for i in 0 ..< rs.count{
                     if v == rs[i] && i >= index {
-                        error = GrammarError(type: .cyclicallyReferencedVariable, info: "\("variable".localized()) '\(v)' \("cyclical referenced".localized())")
+                        error = GrammarError.cyclicallyReferencedVariable(v)
                         return (newTrees , error)
                     }
                 }
