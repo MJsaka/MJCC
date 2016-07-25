@@ -67,7 +67,7 @@ class EquationTree: NSObject {
         
     }
     //返回结果变量
-    func resultVariable() -> String{
+    func resultName() -> String{
         return root.leftChild!.token.text
     }
     //返回所有的变量名

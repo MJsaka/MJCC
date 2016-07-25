@@ -396,7 +396,7 @@ class Parser: NSObject {
         //判断是否有同一个变量用多个等式计算
         var results = [String]()
         for tree in trees {
-            let r = tree.resultVariable()
+            let r = tree.resultName()
             if results.contains(r) {
                 error = GrammarError.recalculatedResultVariable(r)
                 return (trees , error)
@@ -411,61 +411,52 @@ class Parser: NSObject {
     func reorderTrees(trees : [EquationTree]) -> (trees : [EquationTree] , error : GrammarError?) {
 
         var newTrees = [EquationTree]() , error : GrammarError?
-        //rs辅助找到每棵树在新森林中的位置，与新森林同步变化
-        var rs = [String]()
+        //resultsNames辅助找到每棵树在新森林中的位置，与新森林同步变化
+        var resultsNames = [String]()
         for tree in trees {
             newTrees.append(tree)
-            rs.append(tree.resultVariable())
+            resultsNames.append(tree.resultName())
         }
         //遍历原森林，找到每一棵树在新森林中的位置，并将原森林中的该树插入到新森林的合适位置
         for tree in trees {
-            let vs = tree.variables()
-            let r = tree.resultVariable()
+            let variablesNames = tree.variables()
+            let resultName = tree.resultName()
             //该树在新森林中的原位置，备删除用
-            var index = 0
-            for i in 0 ..< rs.count {
-                if r == rs[i] {
-                    index = i
-                    break
-                }
-            }
+            let index = resultsNames.indexOf({ resultName == $0 })!
+            
             //该树在新森林中的新位置，备插入用
             //如果index树中的变量是i树的结果，则index树应该在i树之后计算
             //即index应大于i，否则应将index树插入到最大的i树之后，即newIndex = i + 1
             var newIndex = index
-            for v in vs {
-                for i in 0 ..< rs.count{
-                    if v == rs[i] && i > newIndex {
+            
+            for variableName in variablesNames {
+                for (i,resultName) in resultsNames.enumerate(){
+                    if variableName == resultName && i > newIndex {
                         newIndex = i
                     }
                 }
             }
             if newIndex > index {
-                rs.insert(rs[index], atIndex: newIndex + 1)
+                resultsNames.insert(resultsNames[index], atIndex: newIndex + 1)
                 newTrees.insert(newTrees[index], atIndex: newIndex + 1)
                 
-                rs.removeAtIndex(index)
+                resultsNames.removeAtIndex(index)
                 newTrees.removeAtIndex(index)
             }
         }
         //经过上述遍历之后，新森林应该已经正确排序，否则应该是有变量循环引用
         //故再重复上述遍历，检查是否循环引用变量
         for tree in trees {
-            let vs = tree.variables()
-            let r = tree.resultVariable()
+            let variablesNames = tree.variables()
+            let resultName = tree.resultName()
             //该树在新森林中的原位置
-            var index = 0
-            for i in 0 ..< rs.count {
-                if r == rs[i] {
-                    index = i
-                    break
-                }
-            }
-            //该树在新森林中的新位置，若比原位置大，说明有循环引用
-            for v in vs {
-                for i in 0 ..< rs.count{
-                    if v == rs[i] && i >= index {
-                        error = GrammarError.cyclicallyReferencedVariable(v)
+            let index = resultsNames.indexOf({ resultName == $0 })!
+            
+            //找该树在新森林中的新位置，若比原位置大，说明有循环引用
+            for variableName in variablesNames {
+                for (i,resultName) in resultsNames.enumerate(){
+                    if variableName == resultName && i > index {
+                        error = GrammarError.cyclicallyReferencedVariable(variableName)
                         return (newTrees , error)
                     }
                 }

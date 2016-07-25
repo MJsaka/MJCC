@@ -51,8 +51,7 @@ class EditEquationViewController: UIViewController {
             }else{
                 let trees = t.trees
                 var newExpr : String = ""
-                for i in 0 ..< trees.count {
-                    let tree = trees[i]
+                for (_,tree) in trees.enumerate() {
                     let e = tree.equationString()
                     newExpr += e + ";\n"
                 }

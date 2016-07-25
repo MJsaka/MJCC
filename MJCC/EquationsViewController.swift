@@ -42,11 +42,8 @@ class EquationsViewController: UITableViewController , FinishEditEquation{
             self.updateSectionMap()
             tableView.reloadData()
         }else{
-            for i in 0 ..< sectionsMap.count{
-                if sectionsMap[i] == realSection {
-                    tableView.reloadSections(NSIndexSet(index: i), withRowAnimation: .Automatic)
-                }
-            }
+            let sectionIndex = sectionsMap.indexOf({ $0 == realSection})
+            tableView.reloadSections(NSIndexSet(index: sectionIndex!), withRowAnimation: .Automatic)
         }
     }
     
@@ -87,16 +84,16 @@ class EquationsViewController: UITableViewController , FinishEditEquation{
             let sectionIndex = collation.sectionForObject(equation, collationStringSelector: Selector("name"))
             sectionsArray[sectionIndex].append(equation)
         }
-        for i in 0 ..< sectionTitlesCount{
-            sectionsArray[i] = collation.sortedArrayFromArray(sectionsArray[i], collationStringSelector: Selector("name")) as! [Equation]
+        for (i,sectionArray) in sectionsArray.enumerate(){
+            sectionsArray[i] = collation.sortedArrayFromArray(sectionArray, collationStringSelector: Selector("name")) as! [Equation]
         }
     }
     
     func updateSectionMap() {
         sectionsMap = [Int]()
-        for y in 0 ..< sectionsArray.count {
-            if sectionsArray[y].count > 0 {
-                sectionsMap.append(y)
+        for (realSection,sectionArray) in sectionsArray.enumerate() {
+            if sectionArray.count > 0 {
+                sectionsMap.append(realSection)
             }
         }
     }
@@ -108,8 +105,8 @@ class EquationsViewController: UITableViewController , FinishEditEquation{
     
     override func sectionIndexTitlesForTableView(tableView: UITableView) -> [String]? {
         var titles = [String]()
-        for i in 0 ..< sectionsMap.count {
-            titles.append(collation.sectionTitles[sectionsMap[i]])
+        for (_,realSection) in sectionsMap.enumerate() {
+            titles.append(collation.sectionTitles[realSection])
         }
         return titles
     }

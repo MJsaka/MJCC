@@ -11,15 +11,15 @@ import Localize_Swift
 
 class Variable: NSObject {
     var name :String!
-    var nameLabel: UILabel?
-    var inputField:UITextField?
+    var nameLabel: UILabel!
+    var inputField:UITextField!
     var value : Double?
 }
 
 class Result: NSObject {
     var name :String!
-    var nameLabel: UILabel?
-    var resultLabel: UILabel?
+    var nameLabel: UILabel!
+    var resultLabel: UILabel!
     var value : Double?
 }
 
@@ -77,17 +77,15 @@ class CalViewController: UIViewController , FinishEditEquation{
     }
     
     func generateVariablesAndResults() {
-        for i in 0 ..< trees.count {
-            let tree = trees[i]
+        for (_,tree) in trees.enumerate() {
             let result = Result()
-            result.name = tree.resultVariable()
+            result.name = tree.resultName()
             results.append(result)
         }
         
-        for i in 0 ..< trees.count {
-            let tree = trees[i]
-            let vs = tree.variables()
-            for v in vs {
+        for (_,tree) in trees.enumerate() {
+            let variablesNames = tree.variables()
+            for v in variablesNames {
                 if variables.contains({ v == $0.name})
                 {
                     continue
@@ -122,8 +120,7 @@ class CalViewController: UIViewController , FinishEditEquation{
     func generateEquationLabel() {
         equationLabel = UILabel(frame: CGRect(x: 20, y: 20, width: self.view.frame.width - 40, height: equationLabelHeight))
         var expr : String = ""
-        for i in 0 ..< trees.count {
-            let tree = trees[i]
+        for (_,tree) in trees.enumerate() {
             let e = tree.equationString()
             expr += e + ";\n"
         }
@@ -149,8 +146,7 @@ class CalViewController: UIViewController , FinishEditEquation{
         let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[equationLabel]-20-[variablesView(%lf)]",variablesViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["equationLabel":equationLabel,"variablesView":variablesView])
         contentView.addConstraints(constrains1 + constrains2)
         
-        for i in 0 ..< variables.count{
-            let variable = variables[i]
+        for (i,variable) in variables.enumerate(){
             let name = variable.name
             let label = UILabel(frame: CGRect(x: 20, y: 50 * CGFloat(i), width: 100, height: 30))
             label.text = name
@@ -200,8 +196,7 @@ class CalViewController: UIViewController , FinishEditEquation{
         let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[calButton]-20-[resultsView(%lf)]" , resultsViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["resultsView":resultsView,"calButton":calButton])
         contentView.addConstraints(constrains1 + constrains2)
         
-        for i in 0 ..< results.count{
-            let result = results[i]
+        for (i,result) in results.enumerate(){
             let name = result.name
             let label = UILabel(frame: CGRect(x: 20, y: 50 * CGFloat(i), width: 100, height: 30))
             label.text = name
@@ -230,21 +225,18 @@ class CalViewController: UIViewController , FinishEditEquation{
     
     @IBAction func calculate(sender: UIBarButtonItem) {
         //判断是否所有变量都已经赋值
-        for i in 0 ..< variables.count {
-            let variable = variables[i]
+        for (_,variable) in variables.enumerate() {
             let name = variable.name
-            if let v = Double(variable.inputField!.text!) {
+            if let t = variable.inputField.text , v = Double(t) {
                 variable.value = v
             }else{
                 let ac = UIAlertController(title: "error".localized(), message: "\("variable".localized()) '\(name)' \("inputError".localized())", preferredStyle: .Alert)
                 ac.addAction(UIAlertAction(title: "ok".localized(), style: .Default, handler: nil))
                 self.presentViewController(ac, animated: true, completion: nil)
-                break
+                return
             }
         }
-        for i in 0 ..< trees.count {
-            let tree = trees[i]
-            
+        for (_,tree) in trees.enumerate() {
             for variable in variables {
                 tree.variablesValue[variable.name] = variable.value!
             }
@@ -254,15 +246,12 @@ class CalViewController: UIViewController , FinishEditEquation{
                 }
             }
             
-            let resultVariable = tree.resultVariable()
-            let result = tree.result()
-            for i in 0 ..< results.count {
-                if results[i].name == resultVariable {
-                    results[i].value = result
-                    results[i].resultLabel!.text = "\(result)"
-                    break
-                }
-            }
+            let resultName = tree.resultName()
+            let resultValue = tree.result()
+            let index = results.indexOf({ resultName == $0.name })
+            let result = results[index!]
+            result.value = resultValue
+            result.resultLabel.text = "\(resultValue)"
         }
     }
     
