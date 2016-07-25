@@ -42,7 +42,7 @@ class CalViewController: UIViewController , FinishEditEquation{
     private var contentViewHeight : CGFloat!
     
     private var contentView : UIView!
-    private var equationLabel : UILabel!
+    private var expressionView : UITextView!
     private var variablesView : UIView!
     private var resultsView : UIView!
     private var calButton : UIButton!
@@ -118,22 +118,22 @@ class CalViewController: UIViewController , FinishEditEquation{
     }
     
     func generateEquationLabel() {
-        equationLabel = UILabel(frame: CGRect(x: 20, y: 20, width: self.view.frame.width - 40, height: equationLabelHeight))
+        expressionView = UITextView(frame: CGRect(x: 20, y: 20, width: self.view.frame.width - 40, height: equationLabelHeight))
         var expr : String = ""
         for (_,tree) in trees.enumerate() {
             let e = tree.equationString()
             expr += e + ";\n"
         }
-        equationLabel.text = expr
-        equationLabel.lineBreakMode = .ByTruncatingMiddle
-        equationLabel.textAlignment = .Center
-        equationLabel.numberOfLines = 0
-        equationLabel.backgroundColor = UIColor.yellowColor()
-        contentView.addSubview(equationLabel)
+        expressionView.text = expr
+        expressionView.textAlignment = .Justified
+        expressionView.backgroundColor = UIColor.yellowColor()
+        expressionView.selectable = true
+        expressionView.editable = false
+        contentView.addSubview(expressionView)
         
-        equationLabel.translatesAutoresizingMaskIntoConstraints = false
-        let equationTextViewConstrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[equationLabel]-20-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["equationLabel":equationLabel])
-        let equationTextViewConstrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:|-20-[equationLabel(%lf)]" , equationLabelHeight) , options: NSLayoutFormatOptions(), metrics: nil, views: ["equationLabel":equationLabel])
+        expressionView.translatesAutoresizingMaskIntoConstraints = false
+        let equationTextViewConstrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-20-[expressionView]-20-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["expressionView":expressionView])
+        let equationTextViewConstrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:|-20-[expressionView(%lf)]" , equationLabelHeight) , options: NSLayoutFormatOptions(), metrics: nil, views: ["expressionView":expressionView])
         contentView.addConstraints(equationTextViewConstrains1 + equationTextViewConstrains2)
     }
     
@@ -143,9 +143,10 @@ class CalViewController: UIViewController , FinishEditEquation{
         contentView.addSubview(variablesView)
         variablesView.translatesAutoresizingMaskIntoConstraints = false
         let constrains1 = NSLayoutConstraint.constraintsWithVisualFormat("H:|[variablesView]|", options: .AlignAllCenterY, metrics: nil, views: ["variablesView":variablesView])
-        let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[equationLabel]-20-[variablesView(%lf)]",variablesViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["equationLabel":equationLabel,"variablesView":variablesView])
+        let constrains2 = NSLayoutConstraint.constraintsWithVisualFormat(String(format:"V:[expressionView]-20-[variablesView(%lf)]",variablesViewHeight), options: .AlignAllCenterX, metrics: nil, views: ["expressionView":expressionView,"variablesView":variablesView])
         contentView.addConstraints(constrains1 + constrains2)
         
+        let userDefaults = NSUserDefaults.standardUserDefaults()
         for (i,variable) in variables.enumerate(){
             let name = variable.name
             let label = UILabel(frame: CGRect(x: 20, y: 50 * CGFloat(i), width: 100, height: 30))
@@ -159,7 +160,11 @@ class CalViewController: UIViewController , FinishEditEquation{
             textField.backgroundColor = UIColor.whiteColor()
             textField.borderStyle = .RoundedRect
             textField.keyboardType = .DecimalPad
-            textField.text = ""
+            if let valueString = userDefaults.stringForKey("\(equation.name).\(variable.name)") {
+                textField.text = valueString
+            }else{
+                textField.text = ""
+            }
             variablesView.addSubview(textField)
             variable.inputField = textField
             
@@ -236,6 +241,11 @@ class CalViewController: UIViewController , FinishEditEquation{
                 return
             }
         }
+        let userDefaults = NSUserDefaults.standardUserDefaults()
+        for variable in variables {
+            userDefaults.setObject(variable.inputField.text, forKey: "\(equation.name).\(variable.name)")
+        }
+
         for (_,tree) in trees.enumerate() {
             for variable in variables {
                 tree.variablesValue[variable.name] = variable.value!

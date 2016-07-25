@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         IQKeyboardManager.sharedManager().enable = true
 
         
-        let userDefaults : NSUserDefaults = NSUserDefaults.standardUserDefaults()
+        let userDefaults = NSUserDefaults.standardUserDefaults()
         if (userDefaults.stringForKey("measurement") == nil) {
             userDefaults.setObject("degree", forKey: "measurement")
         }
