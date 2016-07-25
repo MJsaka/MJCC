@@ -10,9 +10,10 @@
 "cyclical referenced" = "cyclical referenced";
 "degree" = "degree";
 "digit" = "digit";
-"error" = "error";
+"exist" = "exist";
 "expect" = "expect";
 "inputError" = "inputError";
+"name" = "name";
 "ok" = "ok";
 "radians" = "radians";
 "recalculated" = "recalculated";

@@ -11,8 +11,10 @@
 "degree" = "角度";
 "digit" = "数字";
 "error" = "错误";
+"exist" = "已经存在";
 "expect" = "需要";
 "inputError" = "输入错误";
+"name" = "名称";
 "ok" = "确定";
 "radians" = "弧度";
 "recalculated" = "重复计算";

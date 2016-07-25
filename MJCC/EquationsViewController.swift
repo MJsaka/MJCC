@@ -168,6 +168,7 @@ class EquationsViewController: UITableViewController , FinishEditEquation{
         if segue.identifier == "ShowEditView" {
             let vc = segue.destinationViewController as! EditEquationViewController
             vc.sourceVC = self
+            vc.editType = .creat
         }else if segue.identifier == "ShowCalView"{
             let indexPath = tableView.indexPathForSelectedRow
             let section = indexPath!.section

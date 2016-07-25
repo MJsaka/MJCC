@@ -13,10 +13,16 @@ protocol FinishEditEquation {
     func finishEditEquation(name name : String ,expr : String)
 }
 
+enum EditType {
+    case modify
+    case creat
+}
+
 class EditEquationViewController: UIViewController {
     
     var sourceVC : FinishEditEquation!
     var equation : Equation?
+    var editType : EditType!
 
     @IBOutlet weak var nameField: UITextField!
     @IBOutlet weak var exprField: UITextView!
@@ -38,6 +44,10 @@ class EditEquationViewController: UIViewController {
         
         if name == nil || expr == nil || name == "" || expr == ""{
             let ac = UIAlertController(title: "error".localized(), message: "inputError".localized(), preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: "ok".localized(), style: .Default, handler: nil))
+            self.presentViewController(ac, animated: true, completion: nil)
+        }else if editType == .creat && EquationsManager.equations().contains({ $0.name == name }){
+            let ac = UIAlertController(title: "error".localized(), message:"\("name".localized()) '\(name!)' \("exist".localized())", preferredStyle: .Alert)
             ac.addAction(UIAlertAction(title: "ok".localized(), style: .Default, handler: nil))
             self.presentViewController(ac, animated: true, completion: nil)
         }else{

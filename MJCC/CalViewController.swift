@@ -284,6 +284,7 @@ class CalViewController: UIViewController , FinishEditEquation{
             let vc = segue.destinationViewController as! EditEquationViewController
             vc.sourceVC = self
             vc.equation = equation
+            vc.editType = .modify
         }
     }
 
