@@ -19,6 +19,7 @@
 "radians" = "弧度";
 "recalculated" = "重复计算";
 "unrecognizable" = "无法识别";
+"self referenced" = "自引用";
 "variable" = "变量";
 
 //Token

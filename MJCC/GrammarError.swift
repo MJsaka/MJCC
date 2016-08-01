@@ -13,6 +13,7 @@ enum ErrorType {
     case unexpectedToken
     case cyclicallyReferencedVariable
     case recalculatedResultVariable
+    case selfReferencedVariable
 }
 
 class GrammarError: NSObject {
@@ -36,9 +37,11 @@ class GrammarError: NSObject {
     class func recalculatedResultVariable(variable : String) -> GrammarError {
         return GrammarError(type: .recalculatedResultVariable, info: "\("variable".localized())'\(variable)'\("recalculated".localized())")
     }
-    
     class func cyclicallyReferencedVariable(variable : String) -> GrammarError {
         return GrammarError(type: .cyclicallyReferencedVariable, info: "\("variable".localized())'\(variable)'\("cyclical referenced".localized())")
+    }
+    class func selfReferencedVariable(variable : String) -> GrammarError {
+        return GrammarError(type: .selfReferencedVariable, info: "\("variable".localized())'\(variable)'\("self referenced".localized())")
     }
     
 }

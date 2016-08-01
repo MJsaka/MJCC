@@ -393,7 +393,16 @@ class Parser: NSObject {
             error = e
             return (trees , error)
         }
-        //判断是否有同一个变量用多个等式计算
+        //判断是否变量自引用
+        for tree in trees {
+            let result = tree.resultName()
+            let variables = tree.variables()
+            if variables.contains(result) {
+                error = GrammarError.selfReferencedVariable(result)
+                return (trees , error)
+            }
+        }
+        //判断是否有结果变量重复计算
         var results = [String]()
         for tree in trees {
             let r = tree.resultName()

@@ -19,6 +19,7 @@
 "radians" = "radians";
 "recalculated" = "recalculated";
 "unrecognizable" = "unrecognizable";
+"self referenced" = "self referenced";
 "variable" = "variable";
 
 //Token
