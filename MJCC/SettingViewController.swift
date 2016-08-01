@@ -14,7 +14,6 @@ class SettingViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
     }
 
     override func viewWillAppear(animated: Bool) {

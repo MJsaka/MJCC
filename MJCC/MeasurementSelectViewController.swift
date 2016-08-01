@@ -15,7 +15,6 @@ class MeasurementSelectViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.navigationController?.navigationBar.tintColor = UIColor.whiteColor()
         let userDefaults = NSUserDefaults.standardUserDefaults()
         let measure = userDefaults.stringForKey("measurement")
         if measure == "degree" {

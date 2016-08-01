@@ -1,0 +1,217 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: #737373;
+    background-color: white;
+    margin: 10px 13px 10px 13px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+
+a {
+    color: #0069d6;
+}
+a:hover {
+    color: #0050a3;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #404040;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 30px;
+}
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+    background-color: #fee9cc;
+    color: rgba(0, 0, 0, 0.75);
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #d9d9d9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #fff;
+    color:#737373;
+    font-size: 11px;
+    padding: 0;
+}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+</style>
+<title>MJCC</title>
+
+</head>
+<body>
+<h1>MJCC</h1>
+
+<h2>简介</h2>
+
+<p><strong>MJCC</strong> 是一个类似带记忆功能的计算器软件，它可以让你将一些常用的计算过程保存为公式，在公式中将每次计算时取值会变化的部分定义为变量，这样每次打开该公式，只需输入变量的值，即可求出所需的结果。</p>
+
+<h2>语法</h2>
+
+<h3>句子</h3>
+
+<p>每个公式可以包含很多的句子，每个句子的形式为: “<strong>变量 = 表达式;</strong>”。</p>
+
+<p>每个句子必须由一个<strong>变量</strong>开头，之后跟一个等号"<strong>=</strong>"，再跟一个<strong>表达式</strong>，并以分号<strong>;</strong>结尾。</p>
+
+<h3>变量</h3>
+
+<p><strong>变量</strong>是以一对花括号“<strong>{}</strong>”包含一个名字的方式来定义，如<strong>{a}</strong>定义了一个名称为<strong>a</strong>的变量，变量可以引用，即：某句子里出现的变量也可以出现在其他句子中，且他们代表同一个变量，因此一个变量可能有以下三种情况：</p>
+
+<ol>
+<li><strong>结果变量</strong>: 某变量只在唯一某个句子的等号左边出现过，刚该变量是一个<strong>结果变量</strong>，在公式计算时，需要根据该句子等号右侧的表达式来求取该变量的值，并且其值将被软件显示在计算结果列表中。</li>
+<li><strong>输入变量</strong>: 某变量只在任意句子的等号右边出现过，刚该变量是一个<strong>输入变量</strong>，软件会为每一个<strong>输入变量</strong>生成一个输入框，在公式计算前，用户必须输入该变量的值，才可以对公式进行计算。</li>
+<li><strong>中间变量</strong>: 某变量在唯一某个句子的等号左边出现过，且在其他句子的等号右边出现过，则该变量是一个<strong>中间变量</strong>，软件不会为<strong>中间变量</strong>生成输入框，也不会在计算结果列表中显示出<strong>中间变量</strong>的值。</li>
+</ol>
+
+
+<p><strong>注意</strong>：一个变量不能同时出现在同一个句子等号的左边和右边(<strong>自引用</strong>)，也不能同时出现在多个句子的左边(<strong>重复计算</strong>)。</p>
+
+<h3>表达式</h3>
+
+<p><strong>表达式</strong>是一个可计算的数学计算式，由<strong>运算符</strong>、<strong>数字</strong>、<strong>常量</strong>、<strong>变量</strong>、<strong>(反)三角函数</strong>、<strong>对数函数</strong>、<strong>括号()</strong>、<strong>逗号,</strong>等结合而成。</p>
+
+<h3>运算符</h3>
+
+<p><strong>运算符</strong>包括<strong>加法+</strong>、<strong>减法-</strong>、<strong>乘法*</strong>、<strong>除法/</strong>、<strong>乘方^</strong>、<strong>开方~</strong>、<strong>阶乘!</strong>、<strong>双阶乘!!</strong>等八个。其中:</p>
+
+<ul>
+<li><strong>阶乘!</strong>、<strong>双阶乘!!</strong>运算符只能用在整数后面。</li>
+<li><strong>乘方运算符^</strong>表示的意义举例：表达式a^b中，a为底数，b为指数。</li>
+<li><strong>开方运算符~</strong>表示的意义举例：表达式a~b中，若a~b的结果为c，则a = c^b。</li>
+</ul>
+
+
+<h3>数字</h3>
+
+<p><strong>数字</strong>包括整数和实数。</p>
+
+<h3>常量</h3>
+
+<p><strong>常量</strong>包括PI、e，PI表示圆周率，e表示自然常数。</p>
+
+<h3>(反)三角函数</h3>
+
+<p><strong>三角函数包括</strong>sin、cos、tan、cot。<strong>反三角函数</strong>包括asin、acos、atan、acot。</p>
+
+<h3>对数函数</h3>
+
+<p><strong>对数函数</strong>包括lg、ln、lb、log，其中lg是以10为底的对数，ln是自然对数，lb是以2为底的对数，log是以任意数为底的对数，用法为log(x,N)，其中x为底数，N为真数。</p>
+</body>
+</html>
