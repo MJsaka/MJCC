@@ -9,28 +9,29 @@
 import UIKit
 import Localize_Swift
 
-class Variable: NSObject {
-    var name :String!
-    var nameLabel: UILabel!
-    var inputField:UITextField!
-    var value : Double?
-}
-
-class Result: NSObject {
-    var name :String!
-    var nameLabel: UILabel!
-    var resultLabel: UILabel!
-    var value : Double?
-}
-
 let EquationNameChangedNotification = "EquationNameChangedNotification"
 
 class CalViewController: UIViewController , FinishEditEquation{
+
+    class Variable: NSObject {
+        var name :String!
+        var nameLabel: UILabel!
+        var inputField:UITextField!
+        var value : Double?
+    }
+    
+    class Result: NSObject {
+        var name :String!
+        var nameLabel: UILabel!
+        var resultLabel: UILabel!
+        var value : Double?
+    }
 
     var equation : Equation!
     private var trees : [EquationTree]!
     
     private var variables : [Variable]!
+    private var intermediaries : [Result]!
     private var results : [Result]!
     
     @IBOutlet private weak var scrollView: UIScrollView!
@@ -44,6 +45,7 @@ class CalViewController: UIViewController , FinishEditEquation{
     private var contentView : UIView!
     private var expressionView : UITextView!
     private var variablesView : UIView!
+    private var intermediaryView : UIView!
     private var resultsView : UIView!
     private var calButton : UIButton!
     
@@ -58,10 +60,11 @@ class CalViewController: UIViewController , FinishEditEquation{
         let parser  = Parser(lexer: lexer)
         trees  = parser.parse().trees
         
-        variables = [Variable]()
-        results = [Result]()
+        variables = []
+        intermediaries = []
+        results = []
         
-        generateVariablesAndResults()
+        generateVariables()
         
         equationLabelHeight = CGFloat(100)
         variablesViewHeight = CGFloat(50 * variables.count - 20)
@@ -73,10 +76,11 @@ class CalViewController: UIViewController , FinishEditEquation{
         generateEquationLabel()
         generateVariablesView()
         generateCalButton()
+        generateIntermediaryView()
         generateResultsView()
     }
     
-    func generateVariablesAndResults() {
+    func generateVariables() {
         for (_,tree) in trees.enumerate() {
             let result = Result()
             result.name = tree.resultName()
@@ -90,8 +94,14 @@ class CalViewController: UIViewController , FinishEditEquation{
                 {
                     continue
                 }
-                if results.contains({ v == $0.name })
+                if intermediaries.contains({ v == $0.name })
                 {
+                    continue
+                }
+                if let index = results.indexOf({ v == $0.name })
+                {
+                    intermediaries.append(results[index])
+                    results.removeAtIndex(index)
                     continue
                 }
                 let variable = Variable()
@@ -192,6 +202,10 @@ class CalViewController: UIViewController , FinishEditEquation{
         contentView.addConstraints(buttonConstrain1 + buttonConstrain2)
     }
     
+    func generateIntermediaryView() {
+        //暂定不显示中间结果
+    }
+    
     func generateResultsView() {
         resultsView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: resultsViewHeight))
 //        resultsView.backgroundColor = UIColor.brownColor()
@@ -241,14 +255,20 @@ class CalViewController: UIViewController , FinishEditEquation{
                 return
             }
         }
+        //如果所有变量都已经赋值，则将其值保存，下次启动该公式时，自动载入上次输入的值
         let userDefaults = NSUserDefaults.standardUserDefaults()
         for variable in variables {
             userDefaults.setObject(variable.inputField.text, forKey: "\(equation.name).\(variable.name)")
         }
-
+        //计算结果并显示
         for (_,tree) in trees.enumerate() {
             for variable in variables {
                 tree.variablesValue[variable.name] = variable.value!
+            }
+            for intermediary in intermediaries {
+                if let value = intermediary.value {
+                    tree.variablesValue[intermediary.name] = value
+                }
             }
             for result in results {
                 if let value = result.value {
@@ -258,10 +278,16 @@ class CalViewController: UIViewController , FinishEditEquation{
             
             let resultName = tree.resultName()
             let resultValue = tree.result()
-            let index = results.indexOf({ resultName == $0.name })
-            let result = results[index!]
-            result.value = resultValue
-            result.resultLabel.text = "\(resultValue)"
+            var result : Result
+            if let index = results.indexOf({ resultName == $0.name }) {
+                result = results[index]
+                result.value = resultValue
+                result.resultLabel.text = "\(resultValue)"
+            }else {
+                let index = intermediaries.indexOf({ resultName == $0.name })
+                result = intermediaries[index!]
+                result.value = resultValue
+            }
         }
     }
     
